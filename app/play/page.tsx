@@ -19,7 +19,7 @@ interface StoredPlayer {
 }
 
 export default function PlayerPage() {
-  const { state, dispatch, identity } = useGame();
+  const { state, dispatch, identity, mode } = useGame();
   const [stored, setStored] = useState<StoredPlayer>({
     name: "Maya",
     church: "St. Mary’s",
@@ -58,6 +58,32 @@ export default function PlayerPage() {
   function buzz() {
     dispatch({ type: "buzz", playerId: player.playerId, at: timestamp() });
     if (navigator.vibrate) navigator.vibrate(35);
+  }
+
+  // In Convex mode the play surface is only real once this device has a
+  // participant record; otherwise the buzzer would look live but be rejected.
+  if (mode === "convex" && identity === undefined) {
+    return (
+      <main className="page-shell" style={{ display: "grid", placeItems: "center", minHeight: "100vh", textAlign: "center", padding: "2rem" }}>
+        <div>
+          <h1>Connecting…</h1>
+          <p>Restoring your player session.</p>
+        </div>
+      </main>
+    );
+  }
+  if (mode === "convex" && identity === null) {
+    return (
+      <main className="page-shell" style={{ display: "grid", placeItems: "center", minHeight: "100vh", textAlign: "center", padding: "2rem" }}>
+        <div>
+          <h1>Join the event first</h1>
+          <p>This device has not joined game night yet.</p>
+          <Link className="button button-gold" href="/" style={{ marginTop: "1rem", display: "inline-flex" }}>
+            Go to the join page
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   return (

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { BrandLockup } from "@/components/brand/brand-lockup";
+import { StaffPinGate } from "@/components/host/staff-pin-gate";
 
 export default function RoomAdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,7 +10,9 @@ export default function RoomAdminLayout({ children }: { children: React.ReactNod
         <BrandLockup href="/room" />
         <Link className="button button-ghost" href="/"><LogOut size={16} /> Exit room console</Link>
       </header>
-      <div className="container" style={{ paddingBlock: "28px 60px" }}>{children}</div>
+      <div className="container" style={{ paddingBlock: "28px 60px" }}>
+        <StaffPinGate>{children}</StaffPinGate>
+      </div>
     </main>
   );
 }

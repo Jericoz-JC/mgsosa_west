@@ -230,17 +230,20 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
     [setCode, hostPin],
   );
 
+  // undefined = lookup in flight, null = this device has not joined the event.
   const identity = useMemo(
     () =>
-      me
-        ? {
-            playerId: me.playerId,
-            name: me.name,
-            church: me.church,
-            teamId: (me.teamSlug as TeamId | null) ?? null,
-            rotationGroup: me.rotationGroup,
-          }
-        : null,
+      me === undefined
+        ? undefined
+        : me === null
+          ? null
+          : {
+              playerId: me.playerId,
+              name: me.name,
+              church: me.church,
+              teamId: (me.teamSlug as TeamId | null) ?? null,
+              rotationGroup: me.rotationGroup,
+            },
     [me],
   );
 
