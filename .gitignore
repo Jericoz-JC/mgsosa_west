@@ -1,0 +1,30 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+
+# production
+build/
+
+# local environment files
+.env*
+!.env.example
+
+# tests
+coverage/
+
+# Convex generated deployment metadata
+.convex/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+*.tsbuildinfo
+
+# Codex working files and generated review artifacts
+.codex-tmp/
+outputs/

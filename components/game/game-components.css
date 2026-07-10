@@ -1,0 +1,24 @@
+.score-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.score-strip-compact {
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
+}
+
+.score-strip-compact .score-chip {
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .score-strip,
+  .score-strip-compact {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .score-chip {
+    min-width: 0;
+  }
+}

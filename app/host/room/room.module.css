@@ -1,0 +1,350 @@
+.page {
+  display: grid;
+  gap: 24px;
+  max-width: 1400px;
+  margin-inline: auto;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 470px);
+  align-items: end;
+  gap: 30px;
+}
+
+.header h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3.4rem, 6vw, 6rem);
+  letter-spacing: -0.035em;
+  line-height: 0.82;
+  text-transform: uppercase;
+}
+
+.header > p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.roomPicker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.roomPicker button {
+  min-height: 96px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  color: var(--ink);
+  background: white;
+  cursor: pointer;
+  text-align: left;
+}
+
+.roomPicker button:hover,
+.roomPicker .selectedRoom {
+  color: white;
+  border-color: var(--navy-900);
+  background: var(--navy-900);
+  box-shadow: 0 14px 30px rgba(8, 35, 63, 0.18);
+}
+
+.roomPicker span,
+.roomPicker strong,
+.roomPicker small {
+  display: block;
+}
+
+.roomPicker span {
+  margin-bottom: 5px;
+  color: var(--blue-500);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.roomPicker strong {
+  font-size: 0.84rem;
+}
+
+.roomPicker small {
+  margin-top: 8px;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.1em;
+}
+
+.roomPicker .selectedRoom small {
+  color: var(--gold);
+}
+
+.consoleGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.55fr);
+  align-items: start;
+  gap: 20px;
+}
+
+.runConsole {
+  overflow: hidden;
+  border-radius: 28px;
+  color: white;
+  background: var(--navy-950);
+  box-shadow: var(--shadow);
+}
+
+.roomBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 19px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.roomBar span,
+.roomBar strong {
+  display: block;
+}
+
+.roomBar span {
+  margin-bottom: 4px;
+  color: var(--sky-300);
+  font-size: 0.63rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.roomBar strong {
+  font-size: 0.9rem;
+}
+
+.codeBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.codeBox small {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.codeBox b {
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+}
+
+.codeBox button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 12px;
+  color: white;
+  background: rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+}
+
+.stageHero {
+  min-height: 500px;
+  padding: clamp(34px, 6vw, 70px);
+  background:
+    radial-gradient(circle at 90% 0, rgba(47, 139, 208, 0.28), transparent 27rem),
+    repeating-radial-gradient(circle at 0 100%, transparent 0 54px, rgba(255, 255, 255, 0.035) 55px 56px);
+}
+
+.stageHero h2 {
+  max-width: 700px;
+  margin: 28px 0 16px;
+  font-family: var(--font-display);
+  font-size: clamp(3.4rem, 7vw, 6.8rem);
+  letter-spacing: -0.035em;
+  line-height: 0.83;
+  text-transform: uppercase;
+}
+
+.stageHero > p {
+  max-width: 620px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: fit-content;
+  margin: 28px 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.timer strong {
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 2.3rem;
+  letter-spacing: 0.06em;
+}
+
+.timer button {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  color: var(--navy-950);
+  background: var(--sky-300);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.primaryActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 34px;
+}
+
+.sideRail {
+  display: grid;
+  gap: 14px;
+}
+
+.sideRail > section {
+  padding: 21px;
+}
+
+.sideHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sideHeading h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  text-transform: uppercase;
+}
+
+.sideHeading > svg {
+  color: var(--blue-600);
+}
+
+.sideRail section > p {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.sideRail section > button {
+  width: 100%;
+}
+
+.sideRail ul {
+  display: grid;
+  gap: 3px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sideRail li {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 50px;
+  border-top: 1px solid var(--line);
+}
+
+.sideRail li > b {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  color: var(--blue-600);
+  background: var(--sky-100);
+  font-size: 0.68rem;
+}
+
+.sideRail li span strong,
+.sideRail li span small {
+  display: block;
+}
+
+.sideRail li span strong {
+  font-size: 0.78rem;
+}
+
+.sideRail li span small {
+  color: var(--muted);
+  font-size: 0.64rem;
+}
+
+.sideRail li > svg {
+  color: var(--green);
+}
+
+.resultsCard {
+  border-color: rgba(74, 195, 157, 0.4);
+  background: #f0fcf8;
+}
+
+.teamButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 15px;
+}
+
+.teamButtons button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 11px;
+  color: white;
+  background: var(--team-color);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+@media (max-width: 1100px) {
+  .consoleGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .header {
+    grid-template-columns: 1fr;
+  }
+
+  .roomBar {
+    align-items: flex-start;
+  }
+
+  .codeBox small {
+    display: none;
+  }
+
+  .stageHero {
+    min-height: 470px;
+    padding: 32px 22px;
+  }
+}

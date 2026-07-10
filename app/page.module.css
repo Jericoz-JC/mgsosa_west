@@ -1,0 +1,303 @@
+.landing {
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(248, 251, 253, 0.98) 0 56%, rgba(230, 246, 255, 0.74) 56%),
+    var(--paper);
+}
+
+.topbar {
+  position: relative;
+  z-index: 5;
+}
+
+.staffLinks {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.03fr) minmax(360px, 0.78fr);
+  align-items: center;
+  gap: clamp(40px, 7vw, 100px);
+  min-height: calc(100vh - 165px);
+  padding-block: 58px 74px;
+}
+
+.heroStory {
+  position: relative;
+  z-index: 2;
+  animation: reveal 650ms ease both;
+}
+
+.liveTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 30px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--navy-800);
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.liveTag span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--coral);
+  box-shadow: 0 0 0 5px rgba(244, 110, 98, 0.14);
+}
+
+.heroStory h1 {
+  max-width: 720px;
+  margin-bottom: 28px;
+  color: var(--navy-950);
+}
+
+.heroStory h1 em {
+  color: var(--blue-600);
+  font-style: normal;
+}
+
+.heroCopy {
+  max-width: 650px;
+  margin-bottom: 36px;
+  color: #425d73;
+  font-size: clamp(1.03rem, 1.5vw, 1.2rem);
+  line-height: 1.72;
+}
+
+.eventFacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.eventFacts > div {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 165px;
+  padding-right: 18px;
+}
+
+.eventFacts svg {
+  color: var(--blue-600);
+}
+
+.eventFacts span {
+  color: var(--muted);
+  font-size: 0.73rem;
+  line-height: 1.5;
+}
+
+.eventFacts strong {
+  display: block;
+  color: var(--navy-900);
+  font-size: 0.9rem;
+}
+
+.joinStage {
+  position: relative;
+  display: grid;
+  align-items: center;
+  min-height: 630px;
+  animation: reveal 700ms 80ms ease both;
+}
+
+.joinStage::before {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  inset: -25% -45% -22% -25%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, rgba(28, 117, 188, 0.22), transparent 55%),
+    repeating-radial-gradient(circle at center, transparent 0 52px, rgba(8, 35, 63, 0.05) 53px 54px);
+}
+
+.brandDisc {
+  position: absolute;
+  top: -22px;
+  right: -115px;
+  width: 260px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 12px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+  transform: rotate(5deg);
+}
+
+.brandDisc img {
+  object-fit: cover;
+}
+
+.joinStage :global(.join-form) {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 19px;
+  padding: clamp(28px, 4vw, 44px);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px);
+}
+
+.joinStage :global(.join-form-heading h2) {
+  margin: 18px 0 8px;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.joinStage :global(.join-form-heading p) {
+  margin-bottom: 5px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.joinStage :global(.join-submit) {
+  width: 100%;
+  min-height: 58px;
+  margin-top: 3px;
+}
+
+.joinStage :global(.form-error) {
+  margin: -2px 0;
+  color: #b43730;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.joinStage :global(.privacy-note) {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.roleNote {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 76px;
+  margin-bottom: 32px;
+  padding: 16px 22px;
+  border: 1px solid rgba(8, 35, 63, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.roleNote svg {
+  color: var(--blue-600);
+}
+
+.roleNote p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.83rem;
+}
+
+.roleNote p strong {
+  color: var(--navy-900);
+}
+
+.roleNote a {
+  color: var(--blue-600);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 980px) {
+  .landing {
+    background: var(--paper);
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    padding-top: 42px;
+  }
+
+  .joinStage {
+    width: min(100%, 600px);
+    min-height: auto;
+    margin-inline: auto;
+  }
+
+  .brandDisc {
+    right: -70px;
+    width: 190px;
+  }
+}
+
+@media (max-width: 620px) {
+  .staffLinks > a:first-child {
+    display: none;
+  }
+
+  .staffLinks .button {
+    min-height: 42px;
+    padding-inline: 14px;
+    font-size: 0.78rem;
+  }
+
+  .hero {
+    gap: 36px;
+    padding-block: 30px 42px;
+  }
+
+  .liveTag {
+    margin-bottom: 22px;
+  }
+
+  .heroCopy {
+    margin-bottom: 26px;
+  }
+
+  .eventFacts > div {
+    min-width: calc(50% - 8px);
+    padding-right: 0;
+  }
+
+  .brandDisc {
+    display: none;
+  }
+
+  .joinStage :global(.join-form) {
+    padding: 25px 20px;
+    border-radius: 24px;
+  }
+
+  .roleNote {
+    grid-template-columns: auto 1fr;
+  }
+
+  .roleNote a {
+    grid-column: 2;
+  }
+}

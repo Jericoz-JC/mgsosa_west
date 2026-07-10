@@ -1,0 +1,244 @@
+.page {
+  display: grid;
+  gap: 24px;
+  max-width: 1420px;
+  margin-inline: auto;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.pageHeader h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 5vw, 5.4rem);
+  letter-spacing: -0.035em;
+  line-height: 0.84;
+  text-transform: uppercase;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.nowBanner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 17px 20px;
+  border-radius: 20px;
+  color: white;
+  background: var(--navy-900);
+  box-shadow: 0 16px 34px rgba(8, 35, 63, 0.18);
+}
+
+.nowIcon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  color: var(--gold);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.nowBanner span {
+  display: block;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.nowBanner strong {
+  font-size: 0.95rem;
+}
+
+.nowBanner a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--sky-300);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(330px, 0.75fr);
+  gap: 22px;
+}
+
+.timeline,
+.rooms {
+  padding: 24px;
+}
+
+.cardHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.cardHeading h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 2.3rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cardHeading > svg {
+  color: var(--blue-600);
+}
+
+.phaseList {
+  display: grid;
+}
+
+.phaseList button {
+  display: grid;
+  grid-template-columns: 54px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 68px;
+  padding: 9px 13px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.phaseList button:first-child {
+  border-top: 0;
+}
+
+.phaseList button:hover,
+.phaseList .activePhase {
+  border-radius: 14px;
+  background: var(--sky-100);
+}
+
+.phaseList time {
+  color: var(--blue-600);
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.phaseList strong,
+.phaseList small {
+  display: block;
+}
+
+.phaseList strong {
+  margin-bottom: 3px;
+  font-size: 0.84rem;
+}
+
+.phaseList small {
+  color: var(--muted);
+  font-size: 0.67rem;
+}
+
+.phaseList svg {
+  color: var(--blue-600);
+}
+
+.roomList {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 17px;
+}
+
+.roomList article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 15px;
+  border-radius: 15px;
+  background: #f4f8fb;
+}
+
+.roomList article span,
+.roomList article strong,
+.roomList article small {
+  display: block;
+}
+
+.roomList article span {
+  margin-bottom: 4px;
+  color: var(--blue-600);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.roomList article strong {
+  font-size: 0.82rem;
+}
+
+.roomList article small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+
+.roomList article button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--navy-900);
+  background: white;
+  cursor: pointer;
+}
+
+.roomList article button b {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+}
+
+.rooms > a {
+  width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .pageHeader {
+    display: grid;
+  }
+
+  .headerActions {
+    justify-content: space-between;
+  }
+
+  .nowBanner {
+    grid-template-columns: auto 1fr;
+  }
+
+  .nowBanner a {
+    grid-column: 2;
+  }
+}
