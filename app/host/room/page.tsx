@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Clock3, Copy, Link2, Play, RefreshCw, RotateCcw, UsersRound, Vote } from "lucide-react";
-import { useDemoGame } from "@/components/game/demo-game-provider";
+import { useGame } from "@/components/game/game-provider";
 import { generateUniqueRoomCode } from "@/lib/game/room-codes";
 import type { BreakoutRoom } from "@/lib/game/types";
 import { timestamp } from "@/lib/game/time";
@@ -19,8 +19,10 @@ const stageCopy: Record<Stage, { title: string; instruction: string; seconds: nu
 };
 
 export default function RoomAdminPage() {
-  const { state, dispatch } = useDemoGame();
-  const [rooms, setRooms] = useState<BreakoutRoom[]>(state.breakoutRooms);
+  const { state, dispatch, mode, setRoomCode } = useGame();
+  const [localRooms, setLocalRooms] = useState<BreakoutRoom[]>(state.breakoutRooms);
+  // In Convex mode room codes live on the server; locally we keep the demo behavior.
+  const rooms = mode === "convex" ? state.breakoutRooms : localRooms;
   const [selectedId, setSelectedId] = useState(state.breakoutRooms[0]?.id);
   const [stage, setStage] = useState<Stage>("lobby");
   const [seconds, setSeconds] = useState(0);
@@ -43,7 +45,11 @@ export default function RoomAdminPage() {
 
   function regenerate() {
     const code = generateUniqueRoomCode(rooms.map((candidate) => candidate.code));
-    setRooms((current) => current.map((candidate) => candidate.id === room.id ? { ...candidate, code } : candidate));
+    if (mode === "convex") {
+      void setRoomCode(room.id, code);
+      return;
+    }
+    setLocalRooms((current) => current.map((candidate) => candidate.id === room.id ? { ...candidate, code } : candidate));
   }
 
   function advance() {

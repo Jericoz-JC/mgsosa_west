@@ -2,6 +2,14 @@ import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { assertHostPin, normalizeCode } from "./security";
 
+export const verifyHostPin = query({
+  args: { hostPin: v.string() },
+  handler: async (_ctx, args) => {
+    const expected = process.env.HOST_PIN;
+    return Boolean(expected) && args.hostPin === expected;
+  },
+});
+
 export const join = mutation({
   args: {
     eventCode: v.string(),
@@ -44,6 +52,29 @@ export const join = mutation({
       rotationGroup,
       lastSeenAt: Date.now(),
     });
+  },
+});
+
+export const me = query({
+  args: { sessionToken: v.string() },
+  handler: async (ctx, args) => {
+    if (args.sessionToken.length < 24) return null;
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_session_token", (q) => q.eq("sessionToken", args.sessionToken))
+      .unique();
+    if (!player) return null;
+    const team = await ctx.db.get(player.teamId);
+    return {
+      playerId: player._id,
+      eventId: player.eventId,
+      name: player.name,
+      church: player.church,
+      teamId: player.teamId,
+      teamSlug: team?.slug ?? null,
+      role: player.role,
+      rotationGroup: player.rotationGroup,
+    };
   },
 });
 

@@ -3,12 +3,12 @@
 import Image from "next/image";
 import { Radio, Trophy } from "lucide-react";
 import { JeopardyBoard } from "@/components/game/jeopardy-board";
-import { useDemoGame } from "@/components/game/demo-game-provider";
+import { useGame } from "@/components/game/game-provider";
 import { getCurrentQuestion, getTeamScore } from "@/lib/game/engine";
 import styles from "./display.module.css";
 
 export default function DisplayPage() {
-  const { state } = useDemoGame();
+  const { state } = useGame();
   const question = getCurrentQuestion(state);
   const winner = state.players.find((player) => player.id === state.buzzWindow?.winnerPlayerId);
   const winnerTeam = state.teams.find((team) => team.id === winner?.teamId);

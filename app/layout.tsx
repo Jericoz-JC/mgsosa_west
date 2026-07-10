@@ -4,7 +4,7 @@ import "@fontsource/barlow-condensed/600.css";
 import "@fontsource/barlow-condensed/700.css";
 import "./globals.css";
 import "@/components/game/game-components.css";
-import { DemoGameProvider } from "@/components/game/demo-game-provider";
+import { GameProvider } from "@/components/game/game-provider";
 
 export const metadata: Metadata = {
   title: "MGSOSA West Game Console",
@@ -21,7 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <DemoGameProvider>{children}</DemoGameProvider>
+        <GameProvider>{children}</GameProvider>
       </body>
     </html>
   );

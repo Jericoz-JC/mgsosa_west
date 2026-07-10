@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ConvexError } from "convex/values";
+import { useGame } from "@/components/game/game-provider";
 import { safeJoin } from "@/lib/game/join";
 
 const churches = [
@@ -16,21 +18,28 @@ const churches = [
 
 export function JoinForm() {
   const router = useRouter();
+  const { join } = useGame();
   const [values, setValues] = useState({ eventCode: "WEST26", name: "", church: "" });
   const [error, setError] = useState<string>();
+  const [joining, setJoining] = useState(false);
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const result = safeJoin(values);
     if (!result.success) {
       setError(result.error.issues[0]?.message ?? "Check your details and try again.");
       return;
     }
-    window.localStorage.setItem(
-      "mgsosa-west-player",
-      JSON.stringify({ ...result.data, playerId: "player-maya", teamId: "pacific", rotationGroup: "A" }),
-    );
-    router.push("/play");
+    setJoining(true);
+    setError(undefined);
+    try {
+      await join(result.data);
+      router.push("/play");
+    } catch (cause) {
+      setError(cause instanceof ConvexError ? String(cause.data) : "Could not join the event. Try again in a moment.");
+    } finally {
+      setJoining(false);
+    }
   }
 
   return (
@@ -80,8 +89,8 @@ export function JoinForm() {
 
       {error ? <p className="form-error" role="alert">{error}</p> : null}
 
-      <button className="button button-gold join-submit" type="submit">
-        Enter the lobby <ArrowRight aria-hidden size={19} />
+      <button className="button button-gold join-submit" disabled={joining} type="submit">
+        {joining ? "Joining…" : "Enter the lobby"} <ArrowRight aria-hidden size={19} />
       </button>
       <p className="privacy-note"><CheckCircle2 aria-hidden size={15} /> We only save your game name, church, and score for this event.</p>
     </form>
