@@ -1,7 +1,12 @@
 .score-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(150px, 1fr));
-  gap: 12px;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--navy-800);
+  border-radius: 4px;
+  background: var(--navy-900);
+  box-shadow: 0 4px 0 #d0c5b2;
 }
 
 .score-strip-compact {
@@ -16,6 +21,14 @@
   .score-strip,
   .score-strip-compact {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .score-chip:nth-child(2) {
+    border-right: 0;
+  }
+
+  .score-chip:nth-child(-n + 2) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   }
 
   .score-chip {
