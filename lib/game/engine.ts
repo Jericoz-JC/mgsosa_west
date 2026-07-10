@@ -54,6 +54,8 @@ function appendScore(state: EventState, event: ScoreEvent): EventState {
 
 export function gameReducer(state: EventState, action: GameAction): EventState {
   switch (action.type) {
+    case "hydrate":
+      return action.state;
     case "select-question": {
       const question = state.questions.find((candidate) => candidate.id === action.questionId);
       if (!question || question.used) return state;

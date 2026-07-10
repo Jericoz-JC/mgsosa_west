@@ -1,9 +1,7 @@
 .playerPage {
   min-height: 100svh;
   padding-bottom: 36px;
-  background:
-    radial-gradient(circle at 50% 52%, color-mix(in srgb, var(--team-accent) 30%, transparent), transparent 36rem),
-    var(--paper);
+  background: var(--paper);
 }
 
 .header {
@@ -83,11 +81,26 @@
 }
 
 .liveCard {
+  position: relative;
   min-height: 590px;
   overflow: hidden;
   border-radius: 32px;
   background: var(--navy-950);
-  box-shadow: var(--shadow);
+  box-shadow: 7px 7px 0 var(--gold);
+}
+
+.liveCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: url("/brand/event-pattern-light.svg") repeat;
+  opacity: 0.035;
+}
+
+.liveCard > * {
+  position: relative;
+  z-index: 1;
 }
 
 .liveHeader {
@@ -113,15 +126,11 @@
   min-height: 515px;
   padding: 34px;
   text-align: center;
-  background:
-    radial-gradient(circle at center, rgba(47, 139, 208, 0.3), transparent 42%),
-    repeating-radial-gradient(circle at center, transparent 0 49px, rgba(255, 255, 255, 0.04) 50px 51px);
+  background: var(--navy-900);
 }
 
 .state-open {
-  background:
-    radial-gradient(circle at center, rgba(255, 201, 79, 0.35), transparent 42%),
-    repeating-radial-gradient(circle at center, transparent 0 49px, rgba(255, 255, 255, 0.05) 50px 51px);
+  background: var(--navy-800);
 }
 
 .buzzButton {
@@ -139,6 +148,10 @@
     0 40px 70px rgba(0, 0, 0, 0.34);
   cursor: pointer;
   animation: pulse 1.5s ease-in-out infinite;
+}
+
+.buzzButton:hover {
+  transform: translateY(-5px) rotate(-2deg);
 }
 
 .buzzButton:active {
@@ -217,7 +230,7 @@
   padding: 26px;
   border: 1px solid var(--line);
   border-radius: 26px;
-  background: rgba(255, 255, 255, 0.78);
+  background: var(--warm);
 }
 
 .nextCard span {

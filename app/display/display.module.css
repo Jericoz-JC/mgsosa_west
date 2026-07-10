@@ -1,12 +1,11 @@
 .display {
+  position: relative;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   min-height: 100vh;
   overflow: hidden;
   color: white;
-  background:
-    radial-gradient(circle at 50% 20%, rgba(28, 117, 188, 0.32), transparent 42rem),
-    var(--navy-950);
+  background: var(--navy-950);
 }
 
 .display::before {
@@ -14,12 +13,10 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: 0.2;
-  background-image:
-    repeating-radial-gradient(circle at 0 100%, transparent 0 78px, rgba(255, 255, 255, 0.08) 79px 80px),
-    linear-gradient(125deg, transparent 48%, rgba(255, 255, 255, 0.035) 49% 51%, transparent 52%);
-  background-size: auto, 90px 150px;
+  background: url("/brand/event-pattern-light.svg") repeat;
+  opacity: 0.035;
 }
+
 
 .header {
   position: relative;

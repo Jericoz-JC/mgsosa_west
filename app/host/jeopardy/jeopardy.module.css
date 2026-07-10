@@ -108,9 +108,7 @@
 
 .clue {
   padding: 24px 22px;
-  background:
-    radial-gradient(circle at 100% 0, rgba(47, 139, 208, 0.25), transparent 18rem),
-    var(--navy-950);
+  background: var(--navy-950);
 }
 
 .clue small {

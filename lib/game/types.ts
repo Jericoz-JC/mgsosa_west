@@ -90,6 +90,7 @@ export interface EventState {
 }
 
 export type GameAction =
+  | { type: "hydrate"; state: EventState }
   | { type: "select-question"; questionId: string; at: number }
   | { type: "open-buzzers"; at: number }
   | { type: "buzz"; playerId: string; at: number }
