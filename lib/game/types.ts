@@ -55,6 +55,7 @@ export interface ScoreEvent {
   teamId: TeamId;
   delta: number;
   reason: string;
+  idempotencyKey?: string;
   questionId?: string;
   createdAt: number;
 }
@@ -97,7 +98,7 @@ export type GameAction =
   | { type: "mark-correct"; at: number }
   | { type: "mark-incorrect"; at: number }
   | { type: "return-to-board" }
-  | { type: "adjust-score"; teamId: TeamId; delta: number; reason: string; at: number }
+  | { type: "adjust-score"; teamId: TeamId; delta: number; reason: string; at: number; idempotencyKey?: string }
   | { type: "undo-score" }
   | { type: "set-phase"; phase: EventPhase; message: string; at: number };
 

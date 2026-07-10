@@ -30,6 +30,10 @@ export default function RoomAdminPage() {
   const room = rooms.find((candidate) => candidate.id === selectedId) ?? rooms[0]!;
   const copy = stageCopy[stage];
   const roster = useMemo(() => state.players.slice(0, room?.game === "imposter" ? 4 : 3), [state.players, room?.game]);
+  const awardKey = room ? `room-award:${room.id}:${state.phaseStartedAt}` : undefined;
+  const awardedEvent = awardKey
+    ? state.scoreLedger.find((event) => event.idempotencyKey === awardKey)
+    : undefined;
 
   useEffect(() => {
     if (!running || seconds <= 0) return;
@@ -67,7 +71,15 @@ export default function RoomAdminPage() {
   }
 
   function award(teamId: (typeof state.teams)[number]["id"]) {
-    dispatch({ type: "adjust-score", teamId, delta: 200, reason: `${room.name} round winner`, at: timestamp() });
+    if (!awardKey || awardedEvent) return;
+    dispatch({
+      type: "adjust-score",
+      teamId,
+      delta: 200,
+      reason: `${room.name} round winner`,
+      at: timestamp(),
+      idempotencyKey: awardKey,
+    });
   }
 
   if (!room) return null;
@@ -111,7 +123,11 @@ export default function RoomAdminPage() {
 
             <div className={styles.primaryActions}>
               {room.game === "imposter" && copy.next ? <button className="button button-gold" onClick={advance} type="button"><Play size={18} /> Start {stageCopy[copy.next].title}</button> : null}
-              {room.game === "gartic" ? <button className="button button-gold" type="button"><Link2 size={18} /> Add Gartic link</button> : null}
+              {room.game === "gartic" ? (
+                <a className="button button-gold" href="https://garticphone.com" target="_blank" rel="noreferrer">
+                  <Link2 size={18} /> Open Gartic Phone
+                </a>
+              ) : null}
               <button className="button button-ghost" onClick={resetRound} type="button"><RotateCcw size={17} /> Reset round</button>
             </div>
           </div>
@@ -124,15 +140,23 @@ export default function RoomAdminPage() {
             <button className="button button-ghost" onClick={regenerate} type="button"><RefreshCw size={16} /> Generate new code</button>
           </section>
 
-          <section className="card">
-            <div className={styles.sideHeading}><div><p className="eyebrow">Roster</p><h2>{roster.length} players</h2></div><UsersRound aria-hidden /></div>
-            <ul>{roster.map((player, index) => <li key={player.id}><b>{index + 1}</b><span><strong>{player.name}</strong><small>{player.church}</small></span><CheckCircle2 size={17} /></li>)}</ul>
-          </section>
+          {mode === "convex" ? (
+            <section className="card">
+              <div className={styles.sideHeading}><div><p className="eyebrow">Attendance</p><h2>Use the Zoom roster</h2></div><UsersRound aria-hidden /></div>
+              <p>Zoom controls the live breakout membership. Confirm names there before starting the round.</p>
+            </section>
+          ) : (
+            <section className="card">
+              <div className={styles.sideHeading}><div><p className="eyebrow">Demo roster</p><h2>{roster.length} players</h2></div><UsersRound aria-hidden /></div>
+              <ul>{roster.map((player, index) => <li key={player.id}><b>{index + 1}</b><span><strong>{player.name}</strong><small>{player.church}</small></span><CheckCircle2 size={17} /></li>)}</ul>
+            </section>
+          )}
 
           {stage === "results" ? (
             <section className={`card ${styles.resultsCard}`}>
-              <div className={styles.sideHeading}><div><p className="eyebrow">Round result</p><h2>Award 200</h2></div><Vote aria-hidden /></div>
-              <div className={styles.teamButtons}>{state.teams.map((team) => <button style={{ "--team-color": team.color } as React.CSSProperties} onClick={() => award(team.id)} type="button" key={team.id}>{team.shortName}</button>)}</div>
+              <div className={styles.sideHeading}><div><p className="eyebrow">Round result</p><h2>{awardedEvent ? "Score submitted" : "Award 200"}</h2></div><Vote aria-hidden /></div>
+              {awardedEvent ? <p role="status">This room’s result for the current rotation is already recorded.</p> : null}
+              <div className={styles.teamButtons}>{state.teams.map((team) => <button disabled={Boolean(awardedEvent)} style={{ "--team-color": team.color } as React.CSSProperties} onClick={() => award(team.id)} type="button" key={team.id}>{team.shortName}</button>)}</div>
             </section>
           ) : null}
         </aside>

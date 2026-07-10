@@ -17,3 +17,7 @@ export type JoinDetails = z.output<typeof joinSchema>;
 export function safeJoin(input: JoinInput) {
   return joinSchema.safeParse(input);
 }
+
+export function matchesEventCode(input: string, expected: string) {
+  return input.trim().toUpperCase() === expected.trim().toUpperCase();
+}

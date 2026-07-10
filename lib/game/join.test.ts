@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { safeJoin } from "./join";
+import { matchesEventCode, safeJoin } from "./join";
 import { getRoleHome } from "./routes";
 
 describe("join and role routing", () => {
@@ -14,6 +14,11 @@ describe("join and role routing", () => {
 
   it("rejects incomplete participant details", () => {
     expect(safeJoin({ eventCode: "", name: "", church: "" }).success).toBe(false);
+  });
+
+  it("matches only the event hosted by this deployment", () => {
+    expect(matchesEventCode(" west26 ", "WEST26")).toBe(true);
+    expect(matchesEventCode("WEST27", "WEST26")).toBe(false);
   });
 
   it("gives every role a distinct, predictable home", () => {

@@ -15,7 +15,7 @@ Participants do not create accounts and never receive host controls, private ans
 
 ## Room admin
 
-1. Open `/room` and unlock the assigned staff session.
+1. Open `/room` and unlock it with the limited room-staff PIN. This credential cannot open Game Master controls or Jeopardy answers.
 2. Select the assigned room.
 3. Copy or regenerate its temporary 4–6 digit numeric code.
 4. Follow the activity steps, timer, roster, and voting/reveal prompts.

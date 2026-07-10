@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { ConvexError } from "convex/values";
 import { useGame } from "@/components/game/game-provider";
-import { safeJoin } from "@/lib/game/join";
+import { matchesEventCode, safeJoin } from "@/lib/game/join";
 
 const churches = [
   "St. Mary’s",
@@ -18,8 +18,8 @@ const churches = [
 
 export function JoinForm() {
   const router = useRouter();
-  const { join } = useGame();
-  const [values, setValues] = useState({ eventCode: "WEST26", name: "", church: "" });
+  const { join, state } = useGame();
+  const [values, setValues] = useState({ eventCode: state.eventCode, name: "", church: "" });
   const [error, setError] = useState<string>();
   const [joining, setJoining] = useState(false);
 
@@ -28,6 +28,10 @@ export function JoinForm() {
     const result = safeJoin(values);
     if (!result.success) {
       setError(result.error.issues[0]?.message ?? "Check your details and try again.");
+      return;
+    }
+    if (!matchesEventCode(result.data.eventCode, state.eventCode)) {
+      setError(`This game-night link uses event code ${state.eventCode}.`);
       return;
     }
     setJoining(true);

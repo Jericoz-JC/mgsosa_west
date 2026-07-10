@@ -22,13 +22,20 @@ export interface GameContextValue {
   state: EventState;
   dispatch: (action: GameAction) => void;
   reset: () => void;
-  /** The current participant, once they have joined. Null before joining (or in demo mode). */
-  identity: GameIdentity | null;
+  /**
+   * The current participant. In Convex mode: undefined while the lookup is in
+   * flight, null when this device has not joined the event. Always null in demo mode.
+   */
+  identity: GameIdentity | null | undefined;
   join: (input: JoinRequest) => Promise<void>;
   /** Host PIN entered on this device. Demo mode is always authorized. */
   hostPin: string | null;
+  /** Limited credential for breakout-room controls; never grants Game Master access. */
+  roomPin: string | null;
   submitHostPin: (pin: string) => Promise<boolean>;
+  submitRoomPin: (pin: string) => Promise<boolean>;
   clearHostPin: () => void;
+  clearRoomPin: () => void;
   setRoomCode: (roomId: string, code: string) => Promise<void>;
 }
 

@@ -23,6 +23,15 @@ describe("Jeopardy game engine", () => {
     expect(second.reason).toBe("already-claimed");
   });
 
+  it("does not erase a winning buzz when open is submitted twice", () => {
+    const open = openFirstQuestion();
+    const claimed = gameReducer(open, { type: "buzz", playerId: "player-maya", at: 1250 });
+    const duplicateOpen = gameReducer(claimed, { type: "open-buzzers", at: 1251 });
+
+    expect(duplicateOpen.buzzWindow?.status).toBe("claimed");
+    expect(duplicateOpen.buzzWindow?.winnerPlayerId).toBe("player-maya");
+  });
+
   it("awards the question value and closes the question", () => {
     const open = openFirstQuestion();
     const buzzed = gameReducer(open, { type: "buzz", playerId: "player-maya", at: 1250 });
@@ -55,5 +64,21 @@ describe("Jeopardy game engine", () => {
     });
     expect(getTeamScore(adjusted, "valley")).toBe(250);
     expect(getTeamScore(gameReducer(adjusted, { type: "undo-score" }), "valley")).toBe(150);
+  });
+
+  it("records a room result only once for an idempotency key", () => {
+    const action = {
+      type: "adjust-score" as const,
+      teamId: "pacific" as const,
+      delta: 200,
+      reason: "Imposter room winner",
+      at: 1500,
+      idempotencyKey: "room-award:room-a:rotation-one",
+    };
+    const once = gameReducer(createSeedState(1000), action);
+    const twice = gameReducer(once, { ...action, at: 1600 });
+
+    expect(getTeamScore(once, "pacific")).toBe(500);
+    expect(getTeamScore(twice, "pacific")).toBe(500);
   });
 });
