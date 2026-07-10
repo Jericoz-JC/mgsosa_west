@@ -1,17 +1,11 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { gameReducer } from "@/lib/game/engine";
 import { createSeedState } from "@/lib/game/seed";
 import type { EventState, GameAction } from "@/lib/game/types";
+import { GameContext, type GameContextValue, type JoinRequest } from "./game-context";
 
-interface DemoGameContextValue {
-  state: EventState;
-  dispatch: (action: GameAction) => void;
-  reset: () => void;
-}
-
-const DemoGameContext = createContext<DemoGameContextValue | null>(null);
 const STORAGE_KEY = "mgsosa-west-demo-state-v1";
 const CHANNEL_NAME = "mgsosa-west-demo-channel";
 
@@ -48,6 +42,13 @@ export function DemoGameProvider({ children }: { children: React.ReactNode }) {
     window.location.reload();
   }, []);
 
+  const join = useCallback(async (input: JoinRequest) => {
+    window.localStorage.setItem(
+      "mgsosa-west-player",
+      JSON.stringify({ ...input, playerId: "player-maya", teamId: "pacific", rotationGroup: "A" }),
+    );
+  }, []);
+
   useEffect(() => {
     if (!hydrated) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -60,12 +61,20 @@ export function DemoGameProvider({ children }: { children: React.ReactNode }) {
     return () => channel.close();
   }, []);
 
-  const value = useMemo(() => ({ state, dispatch, reset }), [state, dispatch, reset]);
-  return <DemoGameContext.Provider value={value}>{children}</DemoGameContext.Provider>;
-}
-
-export function useDemoGame() {
-  const context = useContext(DemoGameContext);
-  if (!context) throw new Error("useDemoGame must be used within DemoGameProvider");
-  return context;
+  const value = useMemo<GameContextValue>(
+    () => ({
+      mode: "demo",
+      state,
+      dispatch,
+      reset,
+      identity: null,
+      join,
+      hostPin: "demo",
+      submitHostPin: async () => true,
+      clearHostPin: () => {},
+      setRoomCode: async () => {},
+    }),
+    [state, dispatch, reset, join],
+  );
+  return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 }

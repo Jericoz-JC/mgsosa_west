@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { ArrowLeft, Check, CircleStop, Eye, Radio, RotateCcw, Unlock, X } from "lucide-react";
 import { JeopardyBoard } from "@/components/game/jeopardy-board";
-import { useDemoGame } from "@/components/game/demo-game-provider";
+import { useGame } from "@/components/game/game-provider";
 import { ScoreStrip } from "@/components/game/score-strip";
 import { getCurrentQuestion } from "@/lib/game/engine";
 import { timestamp } from "@/lib/game/time";
 import styles from "./jeopardy.module.css";
 
 export default function JeopardyHostPage() {
-  const { state, dispatch } = useDemoGame();
+  const { state, dispatch } = useGame();
   const question = getCurrentQuestion(state);
   const winner = state.players.find((player) => player.id === state.buzzWindow?.winnerPlayerId);
   const winnerTeam = state.teams.find((team) => team.id === winner?.teamId);

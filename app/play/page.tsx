@@ -4,22 +4,23 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Radio, Users, Wifi, Zap } from "lucide-react";
 import { BrandLockup } from "@/components/brand/brand-lockup";
-import { useDemoGame } from "@/components/game/demo-game-provider";
+import { useGame } from "@/components/game/game-provider";
 import { getTeamScore } from "@/lib/game/engine";
 import { timestamp } from "@/lib/game/time";
+import type { TeamId } from "@/lib/game/types";
 import styles from "./play.module.css";
 
 interface StoredPlayer {
   name: string;
   church: string;
   playerId: string;
-  teamId: "pacific";
+  teamId: TeamId;
   rotationGroup: string;
 }
 
 export default function PlayerPage() {
-  const { state, dispatch } = useDemoGame();
-  const [player, setPlayer] = useState<StoredPlayer>({
+  const { state, dispatch, identity } = useGame();
+  const [stored, setStored] = useState<StoredPlayer>({
     name: "Maya",
     church: "St. Mary’s",
     playerId: "player-maya",
@@ -28,9 +29,19 @@ export default function PlayerPage() {
   });
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("mgsosa-west-player");
-    if (stored) queueMicrotask(() => setPlayer(JSON.parse(stored) as StoredPlayer));
+    const value = window.localStorage.getItem("mgsosa-west-player");
+    if (value) queueMicrotask(() => setStored(JSON.parse(value) as StoredPlayer));
   }, []);
+
+  const player: StoredPlayer = identity
+    ? {
+        name: identity.name,
+        church: identity.church,
+        playerId: identity.playerId,
+        teamId: identity.teamId ?? "pacific",
+        rotationGroup: identity.rotationGroup,
+      }
+    : stored;
 
   const team = state.teams.find((candidate) => candidate.id === player.teamId) ?? state.teams[0];
   const winner = state.players.find((candidate) => candidate.id === state.buzzWindow?.winnerPlayerId);

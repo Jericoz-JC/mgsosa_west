@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Clock3, Copy, Gamepad2, Radio, UsersRound } from "lucide-react";
-import { useDemoGame } from "@/components/game/demo-game-provider";
+import { useGame } from "@/components/game/game-provider";
 import { ScoreStrip } from "@/components/game/score-strip";
 import type { EventPhase } from "@/lib/game/types";
 import { timestamp } from "@/lib/game/time";
@@ -19,7 +19,7 @@ const phases: Array<{ phase: EventPhase; time: string; label: string; message: s
 ];
 
 export default function HostOverview() {
-  const { state, dispatch } = useDemoGame();
+  const { state, dispatch } = useGame();
 
   function setPhase(item: (typeof phases)[number]) {
     dispatch({ type: "set-phase", phase: item.phase, message: item.message, at: timestamp() });

@@ -16,7 +16,11 @@ pnpm install
 pnpm dev
 ```
 
-Copy `.env.example` to `.env.local`. The interface includes a local demonstration state so the role pathways can be reviewed before the Convex deployment is connected.
+Copy `.env.example` to `.env.local`. When `NEXT_PUBLIC_CONVEX_URL` is empty the interface runs on a local demonstration state so the role pathways can be reviewed without a backend. To connect the hosted realtime backend, follow [convex/README.md](convex/README.md) — running `pnpm convex dev` fills in `NEXT_PUBLIC_CONVEX_URL` automatically.
+
+## Deploying to Vercel
+
+See [convex/README.md](convex/README.md): add a `CONVEX_DEPLOY_KEY` environment variable in Vercel and set the build command to `npx convex deploy --cmd 'pnpm build'`, then set `HOST_PIN` and seed the production deployment once.
 
 ## Roles
 

@@ -50,6 +50,16 @@ export const openBuzzers = mutation({
   },
 });
 
+export const returnToBoard = mutation({
+  args: { eventId: v.id("events"), hostPin: v.string() },
+  handler: async (ctx, args) => {
+    assertHostPin(args.hostPin);
+    const game = await ctx.db.query("jeopardyGames").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).unique();
+    if (!game) throw new ConvexError("Jeopardy is not initialized.");
+    await ctx.db.patch(game._id, { currentQuestionId: undefined, currentBuzzWindowId: undefined });
+  },
+});
+
 export const buzz = mutation({
   args: { eventId: v.id("events"), sessionToken: v.string() },
   handler: async (ctx, args) => {
