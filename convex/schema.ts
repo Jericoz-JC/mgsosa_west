@@ -90,11 +90,13 @@ export default defineSchema({
     teamId: v.id("teams"),
     delta: v.number(),
     reason: v.string(),
+    idempotencyKey: v.optional(v.string()),
     questionId: v.optional(v.id("questions")),
     createdAt: v.number(),
   })
     .index("by_event", ["eventId"])
-    .index("by_event_team", ["eventId", "teamId"]),
+    .index("by_event_team", ["eventId", "teamId"])
+    .index("by_event_idempotency", ["eventId", "idempotencyKey"]),
 
   imposterRounds: defineTable({
     roomId: v.id("breakoutRooms"),

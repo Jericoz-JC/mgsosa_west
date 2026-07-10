@@ -20,7 +20,7 @@ export function HostShell({ children }: { children: React.ReactNode }) {
   const { state, reset, mode, clearHostPin } = useGame();
 
   return (
-    <StaffPinGate>
+    <StaffPinGate access="host">
       <div className={styles.shell}>
         <aside className={styles.sidebar}>
           <BrandLockup href="/host" inverse />

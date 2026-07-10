@@ -1,12 +1,24 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { assertHostPin, normalizeCode } from "./security";
+import { assertHostPin, assertRoomPin, normalizeCode } from "./security";
 
 export const verifyHostPin = query({
   args: { hostPin: v.string() },
   handler: async (_ctx, args) => {
     const expected = process.env.HOST_PIN;
     return Boolean(expected) && args.hostPin === expected;
+  },
+});
+
+export const verifyRoomPin = query({
+  args: { roomPin: v.string() },
+  handler: async (_ctx, args) => {
+    try {
+      assertRoomPin(args.roomPin);
+      return true;
+    } catch {
+      return false;
+    }
   },
 });
 
@@ -19,20 +31,27 @@ export const join = mutation({
   },
   handler: async (ctx, args) => {
     if (args.sessionToken.length < 24) throw new ConvexError("Invalid participant session.");
-    const existing = await ctx.db
-      .query("players")
-      .withIndex("by_session_token", (q) => q.eq("sessionToken", args.sessionToken))
-      .unique();
-    if (existing) {
-      await ctx.db.patch(existing._id, { lastSeenAt: Date.now() });
-      return existing._id;
-    }
-
     const event = await ctx.db
       .query("events")
       .withIndex("by_code", (q) => q.eq("code", normalizeCode(args.eventCode)))
       .unique();
     if (!event) throw new ConvexError("Event code not found.");
+
+    const existing = await ctx.db
+      .query("players")
+      .withIndex("by_session_token", (q) => q.eq("sessionToken", args.sessionToken))
+      .unique();
+    if (existing) {
+      if (existing.eventId !== event._id) {
+        throw new ConvexError("This participant session belongs to another event.");
+      }
+      await ctx.db.patch(existing._id, {
+        name: args.name.trim().slice(0, 32),
+        church: args.church.trim().slice(0, 64),
+        lastSeenAt: Date.now(),
+      });
+      return existing._id;
+    }
 
     const teams = await ctx.db.query("teams").withIndex("by_event", (q) => q.eq("eventId", event._id)).collect();
     if (!teams.length) throw new ConvexError("Teams are not ready yet.");
@@ -56,14 +75,20 @@ export const join = mutation({
 });
 
 export const me = query({
-  args: { sessionToken: v.string() },
+  args: { sessionToken: v.string(), eventCode: v.string() },
   handler: async (ctx, args) => {
     if (args.sessionToken.length < 24) return null;
-    const player = await ctx.db
-      .query("players")
-      .withIndex("by_session_token", (q) => q.eq("sessionToken", args.sessionToken))
-      .unique();
-    if (!player) return null;
+    const [event, player] = await Promise.all([
+      ctx.db
+        .query("events")
+        .withIndex("by_code", (q) => q.eq("code", normalizeCode(args.eventCode)))
+        .unique(),
+      ctx.db
+        .query("players")
+        .withIndex("by_session_token", (q) => q.eq("sessionToken", args.sessionToken))
+        .unique(),
+    ]);
+    if (!event || !player || player.eventId !== event._id) return null;
     const team = await ctx.db.get(player.teamId);
     return {
       playerId: player._id,

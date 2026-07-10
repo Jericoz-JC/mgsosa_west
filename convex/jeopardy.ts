@@ -40,6 +40,7 @@ export const openBuzzers = mutation({
     if (!game?.currentBuzzWindowId) throw new ConvexError("Select a question first.");
     const window = await ctx.db.get(game.currentBuzzWindowId);
     if (!window) throw new ConvexError("Buzzer window is missing.");
+    if (window.status !== "locked") return;
     await ctx.db.patch(window._id, {
       status: "open",
       openedAt: Date.now(),

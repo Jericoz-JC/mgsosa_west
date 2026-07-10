@@ -30,8 +30,12 @@ export interface GameContextValue {
   join: (input: JoinRequest) => Promise<void>;
   /** Host PIN entered on this device. Demo mode is always authorized. */
   hostPin: string | null;
+  /** Limited credential for breakout-room controls; never grants Game Master access. */
+  roomPin: string | null;
   submitHostPin: (pin: string) => Promise<boolean>;
+  submitRoomPin: (pin: string) => Promise<boolean>;
   clearHostPin: () => void;
+  clearRoomPin: () => void;
   setRoomCode: (roomId: string, code: string) => Promise<void>;
 }
 

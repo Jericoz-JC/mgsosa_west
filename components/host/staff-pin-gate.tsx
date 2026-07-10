@@ -4,8 +4,10 @@ import { useState } from "react";
 import { KeyRound } from "lucide-react";
 import { useGame } from "@/components/game/game-provider";
 
-function PinForm() {
-  const { submitHostPin } = useGame();
+type StaffAccess = "host" | "room";
+
+function PinForm({ access }: { access: StaffAccess }) {
+  const { submitHostPin, submitRoomPin } = useGame();
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string>();
   const [checking, setChecking] = useState(false);
@@ -15,7 +17,7 @@ function PinForm() {
     setChecking(true);
     setError(undefined);
     try {
-      const valid = await submitHostPin(pin.trim());
+      const valid = await (access === "host" ? submitHostPin(pin.trim()) : submitRoomPin(pin.trim()));
       if (!valid) setError("That PIN was not accepted. Check with the Game Master.");
     } catch {
       setError("Could not verify the PIN. Check your connection and try again.");
@@ -29,8 +31,11 @@ function PinForm() {
       <form className="join-form" onSubmit={submit} style={{ maxWidth: "26rem", width: "100%" }}>
         <div className="join-form-heading">
           <span className="status-pill status-live"><KeyRound size={13} /> Staff access</span>
-          <h2>Staff console</h2>
-          <p>Enter the staff PIN shared by the Game Master. Participants never need this.</p>
+          <h2>{access === "host" ? "Game Master console" : "Room staff console"}</h2>
+          <p>
+            Enter the {access === "host" ? "Game Master" : "room staff"} PIN.
+            {access === "room" ? " This PIN cannot open Game Master controls." : " Participants never need this."}
+          </p>
         </div>
         <div className="field">
           <label htmlFor="hostPin">Staff PIN</label>
@@ -57,8 +62,9 @@ function PinForm() {
  * Blocks staff surfaces (host console, room-admin console) until the host PIN
  * has been verified against the Convex deployment. Demo mode passes through.
  */
-export function StaffPinGate({ children }: { children: React.ReactNode }) {
-  const { mode, hostPin } = useGame();
-  if (mode === "convex" && !hostPin) return <PinForm />;
+export function StaffPinGate({ children, access = "host" }: { children: React.ReactNode; access?: StaffAccess }) {
+  const { mode, hostPin, roomPin } = useGame();
+  const authorized = access === "host" ? hostPin : roomPin || hostPin;
+  if (mode === "convex" && !authorized) return <PinForm access={access} />;
   return <>{children}</>;
 }

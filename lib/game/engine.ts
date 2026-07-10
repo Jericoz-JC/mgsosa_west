@@ -72,7 +72,13 @@ export function gameReducer(state: EventState, action: GameAction): EventState {
       };
     }
     case "open-buzzers": {
-      if (!state.buzzWindow || !state.currentQuestionId) return state;
+      if (
+        !state.buzzWindow ||
+        !state.currentQuestionId ||
+        state.buzzWindow.status !== "locked"
+      ) {
+        return state;
+      }
       return {
         ...state,
         buzzWindow: {
@@ -136,11 +142,18 @@ export function gameReducer(state: EventState, action: GameAction): EventState {
     case "return-to-board":
       return { ...state, currentQuestionId: undefined, buzzWindow: undefined };
     case "adjust-score":
+      if (
+        action.idempotencyKey &&
+        state.scoreLedger.some((event) => event.idempotencyKey === action.idempotencyKey)
+      ) {
+        return state;
+      }
       return appendScore(state, {
         id: id("adjustment", action.at),
         teamId: action.teamId,
         delta: action.delta,
         reason: action.reason,
+        idempotencyKey: action.idempotencyKey,
         createdAt: action.at,
       });
     case "undo-score":

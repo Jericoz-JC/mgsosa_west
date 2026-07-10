@@ -1,11 +1,11 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { assertHostPin } from "./security";
+import { assertStaffPin } from "./security";
 
 export const setCode = mutation({
   args: { roomId: v.id("breakoutRooms"), code: v.string(), hostPin: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    assertStaffPin(args.hostPin);
     if (!/^\d{4,6}$/.test(args.code)) throw new ConvexError("Room codes must contain 4 to 6 digits.");
     const conflict = await ctx.db.query("breakoutRooms").withIndex("by_code", (q) => q.eq("code", args.code)).unique();
     if (conflict && conflict._id !== args.roomId) throw new ConvexError("That room code is already active.");
@@ -28,8 +28,9 @@ export const joinRoom = mutation({
 });
 
 export const roomPublicState = query({
-  args: { roomId: v.id("breakoutRooms") },
+  args: { roomId: v.id("breakoutRooms"), staffPin: v.string() },
   handler: async (ctx, args) => {
+    assertStaffPin(args.staffPin);
     const room = await ctx.db.get(args.roomId);
     if (!room) return null;
     const members = await ctx.db.query("roomMembers").withIndex("by_room", (q) => q.eq("roomId", room._id)).collect();
