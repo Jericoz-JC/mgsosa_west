@@ -444,3 +444,13 @@
     padding: 32px 22px;
   }
 }
+.roomGuide { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: .8rem; align-items: center; margin: 1rem 0 1.25rem; padding: 1rem; border: 2px solid var(--line); border-radius: 18px; background: #f5efe1; box-shadow: 4px 4px 0 var(--ink); }
+.roomGuide div { display: grid; gap: .25rem; }
+.roomGuide strong { font-size: .78rem; }
+.roomGuide span { color: var(--muted); font-size: .68rem; line-height: 1.35; }
+.roomGuide > p, .addRoomForm { grid-column: 1 / -1; }
+.addRoomForm { display: grid !important; grid-template-columns: 1fr 220px auto; gap: .65rem !important; }
+.addRoomForm input, .addRoomForm select, .capacityControl select { min-height: 42px; border: 1px solid var(--line); border-radius: 9px; padding: 0 .7rem; background: #fff; font: inherit; }
+.capacityControl { display: grid; gap: .25rem; color: var(--muted); font-size: .65rem; }
+.capacityControl select { min-height: 36px; font-weight: 800; }
+@media (max-width: 900px) { .roomGuide { grid-template-columns: 1fr; } .addRoomForm { grid-template-columns: 1fr; } }

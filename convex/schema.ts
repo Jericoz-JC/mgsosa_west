@@ -42,6 +42,7 @@ export default defineSchema({
     hostName: v.string(),
     status: v.union(v.literal("draft"), v.literal("open"), v.literal("in-progress"), v.literal("closed")),
     rotationGroups: v.array(v.string()),
+    capacity: v.optional(v.number()),
     externalUrl: v.optional(v.string()),
   })
     .index("by_event", ["eventId"])
@@ -76,6 +77,7 @@ export default defineSchema({
     clue: v.string(),
     answer: v.string(),
     ageBand: v.string(),
+    round: v.optional(v.number()),
     used: v.boolean(),
   })
     .index("by_event", ["eventId"])
@@ -85,6 +87,7 @@ export default defineSchema({
     eventId: v.id("events"),
     currentQuestionId: v.optional(v.id("questions")),
     currentBuzzWindowId: v.optional(v.id("buzzWindows")),
+    activeRound: v.optional(v.number()),
   }).index("by_event", ["eventId"]),
 
   buzzWindows: defineTable({

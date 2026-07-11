@@ -30,6 +30,7 @@ function participantRoom(room: Doc<"breakoutRooms">) {
     status: room.status,
     rotationGroups: room.rotationGroups,
     externalUrl: room.externalUrl,
+    capacity: room.capacity ?? 12,
   };
 }
 
@@ -62,6 +63,10 @@ export const joinRoom = mutation({
       .withIndex("by_session_token", (q) => q.eq("sessionToken", args.sessionToken))
       .unique();
     if (!player) return { ok: false as const, error: "Join the main event first." };
+    const event = await ctx.db.get(player.eventId);
+    if (!event || (event.phase !== "rotation-one" && event.phase !== "rotation-two")) {
+      return { ok: false as const, error: "Room entry opens when the Game Master starts a breakout rotation." };
+    }
 
     const room = await ctx.db
       .query("breakoutRooms")
@@ -69,6 +74,17 @@ export const joinRoom = mutation({
       .unique();
     if (!room || (room.status !== "open" && room.status !== "in-progress")) {
       return { ok: false as const, error: "Room code not found or no longer open." };
+    }
+
+    const roomMemberships = await ctx.db.query("roomMembers").withIndex("by_room", (q) => q.eq("roomId", room._id)).collect();
+    const activeMembers = roomMemberships.filter((membership) => membership.joinedAt >= event.phaseStartedAt);
+    const alreadyHere = activeMembers.some((membership) => membership.playerId === player._id);
+    if (!alreadyHere && activeMembers.length >= (room.capacity ?? 12)) {
+      return { ok: false as const, error: "That room is full. Ask your Zoom host for another room code." };
+    }
+    if (alreadyHere) {
+      await ctx.db.patch(player._id, { lastSeenAt: Date.now() });
+      return { ok: true as const, room: participantRoom(room) };
     }
 
     const memberships = await ctx.db
@@ -124,12 +140,64 @@ export const hostState = query({
             .sort((a, b) => b.createdAt - a.createdAt)[0];
           return {
             ...room,
+            capacity: room.capacity ?? 12,
+            memberCount: (await ctx.db.query("roomMembers").withIndex("by_room", (q) => q.eq("roomId", room._id)).collect())
+              .filter((membership) => membership.joinedAt >= event.phaseStartedAt).length,
             hostGrantActive: Boolean(activeGrant),
             hostGrantExpiresAt: activeGrant?.expiresAt,
           };
         }),
       ),
     };
+  },
+});
+
+export const createRoom = mutation({
+  args: {
+    eventId: v.id("events"),
+    hostPin: v.string(),
+    game: v.union(v.literal("imposter"), v.literal("gartic")),
+    name: v.string(),
+    capacity: v.number(),
+    rotationGroups: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    assertHostPin(args.hostPin);
+    const event = await ctx.db.get(args.eventId);
+    if (!event) throw new ConvexError("Event not found.");
+    const rooms = await ctx.db.query("breakoutRooms").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).collect();
+    if (rooms.length >= 8) throw new ConvexError("This event supports up to 8 breakout rooms.");
+    const name = args.name.trim().replace(/\s+/g, " ");
+    if (name.length < 3 || name.length > 40) throw new ConvexError("Enter a short room name.");
+    if (!Number.isInteger(args.capacity) || args.capacity < 4 || args.capacity > 16) throw new ConvexError("Room size must be 4 to 16.");
+    let code = "";
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const candidate = String(Math.floor(10000 + Math.random() * 90000));
+      if (!rooms.some((room) => room.code === candidate)) { code = candidate; break; }
+    }
+    if (!code) throw new ConvexError("Could not generate a unique room code. Try again.");
+    return await ctx.db.insert("breakoutRooms", {
+      eventId: args.eventId, name, game: args.game, code,
+      hostName: "Room host needed", status: "open",
+      rotationGroups: args.rotationGroups.length ? args.rotationGroups : ["A", "B", "C", "D"],
+      capacity: args.capacity,
+    });
+  },
+});
+
+export const setRoomCapacity = mutation({
+  args: { roomId: v.id("breakoutRooms"), capacity: v.number(), hostPin: v.string() },
+  handler: async (ctx, args) => {
+    assertHostPin(args.hostPin);
+    if (!Number.isInteger(args.capacity) || args.capacity < 4 || args.capacity > 16) throw new ConvexError("Room size must be 4 to 16.");
+    const room = await ctx.db.get(args.roomId);
+    if (!room) throw new ConvexError("Room not found.");
+    const event = await ctx.db.get(room.eventId);
+    if (!event) throw new ConvexError("Event not found.");
+    const members = await ctx.db.query("roomMembers").withIndex("by_room", (q) => q.eq("roomId", room._id)).collect();
+    const activeCount = members.filter((member) => member.joinedAt >= event.phaseStartedAt).length;
+    if (args.capacity < activeCount) throw new ConvexError(`This room already has ${activeCount} participants.`);
+    await ctx.db.patch(room._id, { capacity: args.capacity });
   },
 });
 

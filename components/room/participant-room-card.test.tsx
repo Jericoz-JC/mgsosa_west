@@ -9,6 +9,7 @@ const room: ParticipantRoom = {
   game: "imposter",
   status: "open",
   rotationGroups: ["A", "C"],
+  capacity: 12,
 };
 
 describe("ParticipantRoomCard", () => {

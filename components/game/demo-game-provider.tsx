@@ -73,6 +73,7 @@ export function DemoGameProvider({ children }: { children: React.ReactNode }) {
         status: room.status,
         rotationGroups: room.rotationGroups,
         externalUrl: room.externalUrl,
+        capacity: room.capacity,
       },
     });
   }, [state.breakoutRooms, state.phaseStartedAt]);
@@ -110,6 +111,21 @@ export function DemoGameProvider({ children }: { children: React.ReactNode }) {
       setRoomCode: async (roomId, code) => dispatch({ type: "set-room-code", roomId, code }),
       awardRoomResult: async (_roomId, teamId, reason, idempotencyKey) => {
         dispatch({ type: "adjust-score", teamId, delta: 200, reason, idempotencyKey, at: Date.now() });
+      },
+      clearParticipants: async () => {
+        const count = state.players.filter((player) => player.role === "participant").length;
+        dispatch({ type: "hydrate", state: { ...state, players: state.players.filter((player) => player.role !== "participant") } });
+        return count;
+      },
+      createRoom: async (input) => {
+        dispatch({ type: "hydrate", state: { ...state, breakoutRooms: [...state.breakoutRooms, {
+          id: `demo-room-${Date.now()}`, name: input.name, game: input.game, capacity: input.capacity,
+          code: String(Math.floor(10000 + Math.random() * 90000)), hostName: "Room host needed",
+          status: "open", rotationGroups: input.rotationGroups,
+        }] } });
+      },
+      setRoomCapacity: async (roomId, capacity) => {
+        dispatch({ type: "hydrate", state: { ...state, breakoutRooms: state.breakoutRooms.map((room) => room.id === roomId ? { ...room, capacity } : room) } });
       },
     }),
     [state, dispatch, reset, currentRoom, join, joinRoom],

@@ -49,6 +49,9 @@ export interface GameContextValue {
   revokeRoomHostLink: (roomId: string) => Promise<void>;
   setRoomCode: (roomId: string, code: string) => Promise<void>;
   awardRoomResult: (roomId: string, teamId: TeamId, reason: string, idempotencyKey: string) => Promise<void>;
+  clearParticipants: (confirmation: string, expectedCount: number) => Promise<number>;
+  createRoom: (input: { name: string; game: "imposter" | "gartic"; capacity: number; rotationGroups: string[] }) => Promise<void>;
+  setRoomCapacity: (roomId: string, capacity: number) => Promise<void>;
 }
 
 export const GameContext = createContext<GameContextValue | null>(null);

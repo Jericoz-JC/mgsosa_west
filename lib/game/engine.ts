@@ -141,6 +141,8 @@ export function gameReducer(state: EventState, action: GameAction): EventState {
     }
     case "return-to-board":
       return { ...state, currentQuestionId: undefined, buzzWindow: undefined };
+    case "set-jeopardy-round":
+      return { ...state, jeopardyRound: action.round, currentQuestionId: undefined, buzzWindow: undefined };
     case "adjust-score":
       if (
         action.idempotencyKey &&

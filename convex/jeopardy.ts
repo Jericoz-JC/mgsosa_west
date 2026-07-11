@@ -21,6 +21,7 @@ export const selectQuestion = mutation({
     if (!question || question.eventId !== args.eventId || question.used) throw new ConvexError("Question is unavailable.");
     const game = await ctx.db.query("jeopardyGames").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).unique();
     if (!game) throw new ConvexError("Jeopardy is not initialized.");
+    if ((question.round ?? 1) !== (game.activeRound ?? 1)) throw new ConvexError("That clue belongs to the other round.");
     const windowId = await ctx.db.insert("buzzWindows", {
       eventId: args.eventId,
       questionId: question._id,
@@ -29,6 +30,16 @@ export const selectQuestion = mutation({
       lockedTeamIds: [],
     });
     await ctx.db.patch(game._id, { currentQuestionId: question._id, currentBuzzWindowId: windowId });
+  },
+});
+
+export const setRound = mutation({
+  args: { eventId: v.id("events"), round: v.union(v.literal(1), v.literal(2)), hostPin: v.string() },
+  handler: async (ctx, args) => {
+    assertHostPin(args.hostPin);
+    const game = await ctx.db.query("jeopardyGames").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).unique();
+    if (!game) throw new ConvexError("Jeopardy is not initialized.");
+    await ctx.db.patch(game._id, { activeRound: args.round, currentQuestionId: undefined, currentBuzzWindowId: undefined });
   },
 });
 

@@ -10,7 +10,8 @@ export function JeopardyBoard({
   onSelect?: (questionId: string) => void;
   displayOnly?: boolean;
 }) {
-  const categories = Array.from(new Set(state.questions.map((question) => question.category)));
+  const roundQuestions = state.questions.filter((question) => question.round === state.jeopardyRound);
+  const categories = Array.from(new Set(roundQuestions.map((question) => question.category)));
 
   return (
     <div className={`${styles.boardScroller} ${displayOnly ? styles.displayOnly : ""}`}>
@@ -18,7 +19,7 @@ export function JeopardyBoard({
         {categories.map((category) => (
           <section className={styles.category} key={category}>
             <h3>{category}</h3>
-            {state.questions
+            {roundQuestions
               .filter((question) => question.category === category)
               .sort((a, b) => a.value - b.value)
               .map((question) => {

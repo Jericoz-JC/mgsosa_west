@@ -92,4 +92,14 @@ describe("Jeopardy game engine", () => {
 
     expect(updated.breakoutRooms.find((room) => room.id === "room-gartic-a")?.code).toBe("86420");
   });
+
+  it("switches Jeopardy rounds without changing scores", () => {
+    const state = createSeedState(1000);
+    const switched = gameReducer(state, { type: "set-jeopardy-round", round: 2 });
+
+    expect(switched.jeopardyRound).toBe(2);
+    expect(switched.currentQuestionId).toBeUndefined();
+    expect(switched.scoreLedger).toEqual(state.scoreLedger);
+    expect(switched.questions.filter((question) => question.round === 2)).toHaveLength(30);
+  });
 });
