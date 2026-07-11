@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Church, Clock3, Copy, Gamepad2, Radio, UsersRound } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, CheckCircle2, Church, Clock3, Copy, Gamepad2, Radio, Trash2, UsersRound } from "lucide-react";
 import { useGame } from "@/components/game/game-provider";
 import { ScoreStrip } from "@/components/game/score-strip";
 import type { EventPhase } from "@/lib/game/types";
@@ -19,7 +20,20 @@ const phases: Array<{ phase: EventPhase; time: string; label: string; message: s
 ];
 
 export default function HostOverview() {
-  const { state, dispatch } = useGame();
+  const { state, dispatch, clearParticipants } = useGame();
+  const [clearText, setClearText] = useState("");
+  const [clearBusy, setClearBusy] = useState(false);
+  const [clearMessage, setClearMessage] = useState<string>();
+
+  async function clearTestParticipants() {
+    setClearBusy(true); setClearMessage(undefined);
+    try {
+      const cleared = await clearParticipants(clearText, state.players.length);
+      setClearText(""); setClearMessage(`${cleared} participant${cleared === 1 ? "" : "s"} cleared. Teams, scores, rooms, and questions were kept.`);
+    } catch (error) {
+      setClearMessage(error instanceof Error ? error.message : "Participants could not be cleared.");
+    } finally { setClearBusy(false); }
+  }
 
   function setPhase(item: (typeof phases)[number]) {
     dispatch({ type: "set-phase", phase: item.phase, message: item.message, at: timestamp() });
@@ -101,6 +115,14 @@ export default function HostOverview() {
               ))}
             </div>
           ) : <p className={styles.emptyAttendance}>No participants have joined yet.</p>}
+          <details className={styles.clearPanel}>
+            <summary><Trash2 size={15} /> Clear test participants</summary>
+            <p>Available only in the Lobby. This removes participant sessions and room joins, but keeps scores, rooms, and both Jeopardy rounds.</p>
+            <label>Type <strong>CLEAR PARTICIPANTS</strong><input disabled={state.phase !== "lobby" || clearBusy} onChange={(event) => setClearText(event.target.value)} value={clearText} /></label>
+            <button className="button button-danger" disabled={state.phase !== "lobby" || clearBusy || clearText !== "CLEAR PARTICIPANTS" || state.players.length === 0} onClick={clearTestParticipants} type="button">{clearBusy ? "Clearing…" : `Clear ${state.players.length} participants`}</button>
+            {state.phase !== "lobby" ? <small>Return the event timeline to Lobby to unlock this safety action.</small> : null}
+            {clearMessage ? <small role="status">{clearMessage}</small> : null}
+          </details>
         </section>
       </div>
     </div>

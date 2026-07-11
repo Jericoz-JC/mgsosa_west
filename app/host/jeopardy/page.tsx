@@ -32,10 +32,17 @@ export default function JeopardyHostPage() {
 
       <ScoreStrip state={state} compact />
 
+      <nav className={styles.roundPicker} aria-label="Jeopardy round">
+        <div><span>Question set</span><strong>Round {state.jeopardyRound} of 2</strong></div>
+        <button aria-pressed={state.jeopardyRound === 1} disabled={Boolean(question)} onClick={() => dispatch({ type: "set-jeopardy-round", round: 1 })} type="button">Round 1</button>
+        <button aria-pressed={state.jeopardyRound === 2} disabled={Boolean(question)} onClick={() => dispatch({ type: "set-jeopardy-round", round: 2 })} type="button">Round 2</button>
+        <p>Round 2 adds 30 fresh, age-balanced clues. Switching rounds keeps every team score.</p>
+      </nav>
+
       <div className={question ? styles.liveLayout : undefined}>
         <section className={styles.boardPanel}>
           <div className={styles.panelHeading}>
-            <div><span>Question board</span><strong>{state.questions.filter((item) => !item.used).length} clues remaining</strong></div>
+            <div><span>Round {state.jeopardyRound} board</span><strong>{state.questions.filter((item) => item.round === state.jeopardyRound && !item.used).length} clues remaining</strong></div>
             {question ? <button className="button button-ghost" onClick={() => dispatch({ type: "return-to-board" })} type="button"><RotateCcw size={16} /> Back to board</button> : null}
           </div>
           <JeopardyBoard

@@ -38,6 +38,8 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
     awardRoomResult,
     issueRoomHostLink,
     revokeRoomHostLink,
+    createRoom,
+    setRoomCapacity,
   } = useGame();
   const volunteer = scope === "volunteer";
   const activeRotation = state.phase === "rotation-one" || state.phase === "rotation-two";
@@ -54,6 +56,11 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
   const [latestLink, setLatestLink] = useState<{ roomId: string; value: string }>();
   const [linkCopyStatus, setLinkCopyStatus] = useState<"copied" | "ready">("ready");
   const [codeCopyMessage, setCodeCopyMessage] = useState<string>();
+  const [showAddRoom, setShowAddRoom] = useState(false);
+  const [newRoomName, setNewRoomName] = useState("");
+  const [newRoomGame, setNewRoomGame] = useState<"imposter" | "gartic">("imposter");
+  const [roomBusy, setRoomBusy] = useState(false);
+  const [roomError, setRoomError] = useState<string>();
   const room = rooms.find((candidate) => candidate.id === selectedId) ?? rooms[0];
   const copy = stageCopy[stage];
   const roster = useMemo(
@@ -169,6 +176,24 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
     }
   }
 
+  async function addRoom() {
+    if (roomBusy || newRoomName.trim().length < 3) return;
+    setRoomBusy(true); setRoomError(undefined);
+    try {
+      await createRoom({ name: newRoomName, game: newRoomGame, capacity: 12, rotationGroups: ["A", "B", "C", "D"] });
+      setNewRoomName(""); setShowAddRoom(false);
+    } catch (error) { setRoomError(error instanceof Error ? error.message : "Room could not be added."); }
+    finally { setRoomBusy(false); }
+  }
+
+  async function changeCapacity(value: number) {
+    if (!room || roomBusy) return;
+    setRoomBusy(true); setRoomError(undefined);
+    try { await setRoomCapacity(room.id, value); }
+    catch (error) { setRoomError(error instanceof Error ? error.message : "Room size could not be changed."); }
+    finally { setRoomBusy(false); }
+  }
+
   if (!room) return null;
 
   return (
@@ -182,6 +207,19 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
           ? "Run the assigned activity, keep momentum, and submit the result. The Game Master handles everything else."
           : "Create participant codes, send each volunteer a private link, and keep room access separate from Game Master controls."}</p>
       </header>
+
+      {!volunteer ? <section className={styles.roomGuide}>
+        <div><strong>1. Choose how many parallel rooms you need.</strong><span>Keep each room near 8–12 people. Four rooms handle up to 48 smoothly.</span></div>
+        <div><strong>2. Give each Zoom room its matching code.</strong><span>The code is a door key; it does not move anyone in Zoom.</span></div>
+        <div><strong>3. Send each volunteer one private link.</strong><span>They see only their room, live roster, timer, and scoring.</span></div>
+        <button className="button button-dark" disabled={rooms.length >= 8} onClick={() => setShowAddRoom((value) => !value)} type="button">{showAddRoom ? "Cancel" : "+ Add breakout room"}</button>
+        {showAddRoom ? <div className={styles.addRoomForm}>
+          <input aria-label="New room name" onChange={(event) => setNewRoomName(event.target.value)} placeholder="Example: Imposter • Phoenix" value={newRoomName} />
+          <select aria-label="Game" onChange={(event) => setNewRoomGame(event.target.value as "imposter" | "gartic")} value={newRoomGame}><option value="imposter">Find the Imposter</option><option value="gartic">Gartic Phone</option></select>
+          <button className="button button-gold" disabled={roomBusy || newRoomName.trim().length < 3} onClick={addRoom} type="button">{roomBusy ? "Adding…" : "Create room for 12"}</button>
+        </div> : null}
+        {roomError ? <p className="form-error" role="alert">{roomError}</p> : null}
+      </section> : null}
 
       {!volunteer && rooms.length > 1 ? (
         <section className={styles.roomPicker} aria-label="Choose a room to manage">
@@ -205,6 +243,11 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
               <button onClick={copyParticipantCode} type="button" aria-label="Copy participant room code"><Copy size={16} /></button>
               {codeCopyMessage ? <em className={styles.copyFeedback} role="status">{codeCopyMessage}</em> : null}
             </div>
+            <label className={styles.capacityControl}>Room size
+              <select disabled={volunteer || roomBusy} onChange={(event) => changeCapacity(Number(event.target.value))} value={room.capacity}>
+                {[8, 10, 12, 14, 16].map((size) => <option key={size} value={size}>{room.memberCount ?? roster.length}/{size} joined</option>)}
+              </select>
+            </label>
           </div>
 
           <div className={styles.stageHero}>
@@ -238,7 +281,7 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
         <aside className={styles.sideRail}>
           <section className="card">
             <div className={styles.sideHeading}><div><p className="eyebrow">Participants</p><h2>Room entry</h2></div><RefreshCw aria-hidden /></div>
-            <p>Share this temporary code only in the matching Zoom breakout room. Replacing it stops new joins with the old code.</p>
+            <p>Share this temporary code only in the matching Zoom breakout room. Participants enter it on their phone after the Game Master starts a rotation. Replacing it stops new joins with the old code.</p>
             <button className="button button-ghost" disabled={codeBusy} onClick={regenerate} type="button"><RefreshCw size={16} /> {codeBusy ? "Generating…" : "Generate new code"}</button>
           </section>
 

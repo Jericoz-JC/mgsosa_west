@@ -56,15 +56,24 @@ To rotate the PIN, run `pnpm exec convex env set HOST_PIN --prod`, enter the new
 6. Press **Create + copy link** for each room and privately send that link only to its assigned Room Host. Replacing a link invalidates the previous link.
 7. Ask each Room Host to open the link and confirm that it shows the correct room. Test one participant join from a phone.
 
+### Safe testing reset
+
+- Participant cleanup is under **Check-in â†’ Clear test participants** in the Game Master overview.
+- It unlocks only while the event is in **Lobby** and requires typing `CLEAR PARTICIPANTS` exactly.
+- It removes participant sessions and room joins only. Teams, room configuration, volunteer links, scores, question usage, and both Jeopardy rounds stay intact.
+- The server rechecks the participant count before deleting anything, so a new arrival cannot be cleared by a stale confirmation.
+
 ### During breakout rotations
 
 1. On **Event control**, select **Rotation one** when the first breakouts begin. Participants will then see the room-code entry screen.
 2. Tell each Room Host to share only their room's temporary numeric code inside the matching Zoom breakout.
-3. Watch Zoom for timing and transitions. The Room Host link shows the live web roster for its room.
-4. At 6:00 PM, select **Room switch** and return everyone to the main Zoom room.
-5. Open **Breakout rooms**, generate fresh codes if desired, and confirm the second-room assignments.
-6. At 6:05 PM, select **Rotation two**. Old room membership is no longer treated as current.
-7. At 6:25 PM, select **Score check** and confirm that each Room Host submitted no more than one 200-point result for the rotation.
+3. Treat each website room as one parallel Zoom breakout. The code is only the door key for the web session; Zoom still controls who is moved where.
+4. Keep rooms at 8â€“12 participants when possible. The console starts with four rooms (two Imposter and two Gartic), supports up to eight, and allows a 4â€“16 person limit per room.
+5. Watch Zoom for timing and transitions. The Room Host link shows the live web roster for its room.
+6. At 6:00 PM, select **Room switch** and return everyone to the main Zoom room.
+7. Open **Breakout rooms**, generate fresh codes if desired, and confirm the second-room assignments.
+8. At 6:05 PM, select **Rotation two**. Old room membership is no longer treated as current.
+9. At 6:25 PM, select **Score check** and confirm that each Room Host submitted no more than one 200-point result for the rotation.
 
 ### Running Bible Jeopardy
 
@@ -76,6 +85,7 @@ To rotate the PIN, run `pnpm exec convex env set HOST_PIN --prod`, enter the new
 6. After an incorrect response, press **Reopen for other teams** if another team may answer.
 7. Press **Close clue** to return to the board. If a clue stalls, reveal the answer and move on.
 8. At the end, select **Winners + close** on Event control and use the shared display for the final standings.
+9. If the first board runs short, return to the board and select **Round 2**. It adds 30 new age-balanced clues and preserves every team score. Round 1 can be reopened the same way.
 
 ## Find the Imposter Room Host instructions
 

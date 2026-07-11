@@ -7,15 +7,15 @@ export const teams: Team[] = [
   { id: "valley", name: "Valley Green", shortName: "Valley", color: "#39816b", accent: "#a7e1ce" },
 ];
 
-const categories = [
+const roundOneCategories = [
   {
-    name: "Qurbono Essentials",
+    name: "Holy Qurbana Essentials",
     items: [
-      [100, "Meaning ‘offering of sacrifice,’ this is the Syriac name for Holy Communion.", "Qurbono / Qurbana", "HQ-003", "Ages 9-12"],
-      [200, "Holy Qurbono commemorates Christ’s birth, ministry, death, resurrection, and this promised event.", "The Second Coming", "HQ-002", "Ages 9-12"],
-      [300, "These two primary sacramental elements are used for Holy Qurbono.", "Leavened bread and wine mixed with water", "HQ-008", "Ages 13-17"],
-      [400, "Known as the Queen of Sacraments, this sacrament is the focus of the study guide.", "Holy Qurbono / Holy Communion", "HQ-004", "Ages 13-17"],
-      [500, "Name the four components of Holy Qurbono listed in the source.", "Celebrant; sacramental items; Book of Holy Liturgy; recipient", "HQ-006", "Ages 18-25"],
+      [100, "Meaning ‘offering of sacrifice,’ this Syriac word names the Holy Qurbana.", "Qurbana", "HQ-003", "Ages 9-12"],
+      [200, "Holy Qurbana commemorates Christ’s birth, ministry, death, resurrection, and this promised event.", "The Second Coming", "HQ-002", "Ages 9-12"],
+      [300, "These two primary sacramental elements are used for Holy Qurbana.", "Leavened bread and wine mixed with water", "HQ-008", "Ages 13-17"],
+      [400, "Known as the Queen of Sacraments, this sacrament is the focus of the study guide.", "Holy Qurbana / Holy Communion", "HQ-004", "Ages 13-17"],
+      [500, "Name the four components of Holy Qurbana listed in the source.", "Celebrant; sacramental items; Book of Holy Liturgy; recipient", "HQ-006", "Ages 18-25"],
     ],
   },
   {
@@ -42,7 +42,7 @@ const categories = [
     name: "Liturgy Journey",
     items: [
       [100, "Preparation for Holy Communion should begin at this time.", "The previous evening", "HQ-059", "Ages 9-12"],
-      [200, "Name the two parts of the public celebration of Holy Qurbono.", "Mass of the Catechumens and Anaphora of the Faithful", "HQ-076", "Ages 13-17"],
+      [200, "Name the two parts of the public celebration of Holy Qurbana.", "Mass of the Catechumens and Anaphora of the Faithful", "HQ-076", "Ages 13-17"],
       [300, "The Anaphora begins when the celebrant steps onto this altar step.", "Dargo", "HQ-102", "Ages 13-17"],
       [400, "The Elevation of the Holy Mysteries celebrates this event.", "The Ascension of our Lord", "HQ-124", "Ages 13-17"],
       [500, "Before the Procession, the closed veil symbolizes this present age.", "The age awaiting the Second Coming", "HQ-131", "Ages 18-25"],
@@ -70,7 +70,7 @@ const categories = [
   },
 ] as const;
 
-export const questions: JeopardyQuestion[] = categories.flatMap((category, categoryIndex) =>
+const roundOneQuestions: JeopardyQuestion[] = roundOneCategories.flatMap((category, categoryIndex) =>
   category.items.map(([value, clue, answer, sourceId, ageBand], rowIndex) => ({
     id: `q-${categoryIndex + 1}-${rowIndex + 1}`,
     category: category.name,
@@ -80,8 +80,70 @@ export const questions: JeopardyQuestion[] = categories.flatMap((category, categ
     sourceId,
     ageBand,
     used: false,
+    round: 1,
   })),
 );
+
+const roundTwoCategories = [
+  ["Holy Qurbana Basics", [
+    [100, "Jesus established the Holy Qurbana at this meal with His disciples.", "The Last Supper", "HQ2-001", "Ages 9-12"],
+    [200, "This title for the Holy Qurbana means it is the greatest of the Church's sacraments.", "The Queen of Sacraments", "HQ2-004", "Ages 9-12"],
+    [300, "The bread used for the Holy Qurbana is called this Syriac name.", "Lahmo", "HQ2-055", "Ages 13-17"],
+    [400, "Name the two gifts placed on the Tablitho during the Holy Qurbana.", "The paten and chalice", "HQ2-030", "Ages 13-17"],
+    [500, "This preparation service of prayers takes place before the public Holy Qurbana.", "Thuyobo (preparation prayers)", "HQ2-068", "Ages 13-17"],
+  ]],
+  ["Inside the Church", [
+    [100, "This central part of the church is where the congregation stands or sits.", "The nave", "HQ2-014", "Ages 9-12"],
+    [200, "The Madbaho, or sanctuary, represents this hill where Jesus was crucified.", "Golgotha (Calvary)", "HQ2-016", "Ages 9-12"],
+    [300, "This stand holds the Gospel book and is sometimes called the second thronos.", "The lectern or Gospel stand", "HQ2-043", "Ages 13-17"],
+    [400, "The twelve bells on the censer remind us of this group.", "The twelve Apostles", "HQ2-047", "Ages 13-17"],
+    [500, "Removing shoes before entering the sanctuary expresses this attitude toward God.", "Reverence", "HQ2-065", "Ages 13-17"],
+  ]],
+  ["Words We Hear", [
+    [100, "What does 'Halleluiah' mean?", "Praise the Lord", "HQ2-168", "Ages 9-12"],
+    [200, "What does 'Barekmor' mean?", "Bless me, O Lord", "HQ2-153", "Ages 9-12"],
+    [300, "This Syriac word means 'Gospel.'", "Evangelion", "HQ2-166", "Ages 13-17"],
+    [400, "This word names the long prayer that follows the preface.", "Sedro", "HQ2-204", "Ages 13-17"],
+    [500, "This concluding prayer of the service is called what?", "Hoothomo", "HQ2-170", "Ages 13-17"],
+  ]],
+  ["Worship in Action", [
+    [100, "Before Holy Communion, we prepare through prayer, Scripture, and this quiet practice.", "Meditation", "HQ2-056", "Ages 9-12"],
+    [200, "The traditional fast before receiving Holy Communion begins at this time.", "Midnight", "HQ2-060", "Ages 9-12"],
+    [300, "The Kiss of Peace calls worshippers to this relationship with one another.", "Peace and reconciliation", "HQ2-103", "Ages 13-17"],
+    [400, "The invocation asks the Father to send whom upon the bread and wine?", "The Holy Spirit", "HQ2-111", "Ages 13-17"],
+    [500, "The words 'Until I come' point the Church toward this promised event.", "The Second Coming", "HQ2-109", "Ages 13-17"],
+  ]],
+  ["Bible & Creed", [
+    [100, "The first four books of the New Testament are known together by this name.", "The Gospels", "SS2-B01", "Ages 9-12"],
+    [200, "This saint's Upper Room is associated with the Last Supper tradition.", "St. Mark", "HQ2-011", "Ages 9-12"],
+    [300, "The Nicene Creed was first formulated at this council in A.D. 325.", "The Council of Nicaea", "HQ2-097", "Ages 13-17"],
+    [400, "In the Creed, we confess one baptism for this purpose.", "The remission (forgiveness) of sins", "HQ2-099", "Ages 13-17"],
+    [500, "Name the three ecumenical councils received by the Oriental Orthodox Church.", "Nicaea, Constantinople, and Ephesus", "HQ2-143", "Ages 13-17"],
+  ]],
+  ["Signs of Hope", [
+    [100, "Lighted candles in the sanctuary remind us of whose presence?", "God's presence", "HQ2-023", "Ages 9-12"],
+    [200, "Opening the sanctuary veil is a sign that this has been opened to us.", "Heaven", "HQ2-020", "Ages 9-12"],
+    [300, "The Kaukbo, or star over the paten, recalls this event in Jesus' life.", "The Nativity", "HQ2-037", "Ages 13-17"],
+    [400, "The ringing of bells during Anpudayone proclaims this victory of Christ.", "The Resurrection", "HQ2-120", "Ages 13-17"],
+    [500, "The Elevation of the Holy Mysteries points to this event after the Resurrection.", "The Ascension of our Lord", "HQ2-124", "Ages 13-17"],
+  ]],
+] as const;
+
+const roundTwoQuestions: JeopardyQuestion[] = roundTwoCategories.flatMap(([category, items], categoryIndex) =>
+  items.map(([value, clue, answer, sourceId, ageBand], rowIndex) => ({
+    id: `q-2-${categoryIndex + 1}-${rowIndex + 1}`,
+    category,
+    value,
+    clue,
+    answer,
+    sourceId,
+    ageBand,
+    used: false,
+    round: 2,
+  })),
+);
+
+export const questions: JeopardyQuestion[] = [...roundOneQuestions, ...roundTwoQuestions];
 
 export function createSeedState(now = Date.now()): EventState {
   return {
@@ -98,10 +160,11 @@ export function createSeedState(now = Date.now()): EventState {
       { id: "player-daniel", name: "Daniel", church: "St. Peter", teamId: "valley", role: "participant", connected: true },
     ],
     breakoutRooms: [
-      { id: "room-imposter-a", name: "Imposter • Pacific", game: "imposter", code: "48215", hostName: "Room host needed", status: "open", rotationGroups: ["A", "C"] },
-      { id: "room-gartic-a", name: "Gartic • Sierra", game: "gartic", code: "73106", hostName: "Room host needed", status: "open", rotationGroups: ["B", "D"] },
+      { id: "room-imposter-a", name: "Imposter • Pacific", game: "imposter", code: "48215", hostName: "Room host needed", status: "open", rotationGroups: ["A", "C"], capacity: 12 },
+      { id: "room-gartic-a", name: "Gartic • Sierra", game: "gartic", code: "73106", hostName: "Room host needed", status: "open", rotationGroups: ["B", "D"], capacity: 12 },
     ],
     questions,
+    jeopardyRound: 1,
     scoreLedger: [
       { id: "seed-score-1", teamId: "pacific", delta: 300, reason: "Imposter round", createdAt: now - 1200000 },
       { id: "seed-score-2", teamId: "sierra", delta: 200, reason: "Gartic favorite", createdAt: now - 900000 },

@@ -37,6 +37,7 @@ export interface JeopardyQuestion {
   ageBand: "Ages 9-12" | "Ages 13-17" | "Ages 18-25";
   sourceId: string;
   used: boolean;
+  round: 1 | 2;
 }
 
 export interface BuzzWindow {
@@ -70,11 +71,13 @@ export interface BreakoutRoom {
   rotationGroups: string[];
   externalUrl?: string;
   hasActiveHostGrant?: boolean;
+  capacity: number;
+  memberCount?: number;
 }
 
 export type ParticipantRoom = Pick<
   BreakoutRoom,
-  "id" | "name" | "game" | "status" | "rotationGroups" | "externalUrl"
+  "id" | "name" | "game" | "status" | "rotationGroups" | "externalUrl" | "capacity"
 >;
 
 export interface RoomHostMember {
@@ -100,6 +103,7 @@ export interface EventState {
   players: Player[];
   breakoutRooms: BreakoutRoom[];
   questions: JeopardyQuestion[];
+  jeopardyRound: 1 | 2;
   currentQuestionId?: string;
   buzzWindow?: BuzzWindow;
   scoreLedger: ScoreEvent[];
@@ -120,6 +124,7 @@ export type GameAction =
   | { type: "adjust-score"; teamId: TeamId; delta: number; reason: string; at: number; idempotencyKey?: string }
   | { type: "undo-score" }
   | { type: "set-room-code"; roomId: string; code: string }
+  | { type: "set-jeopardy-round"; round: 1 | 2 }
   | { type: "set-phase"; phase: EventPhase; message: string; at: number };
 
 export interface BuzzClaimResult {

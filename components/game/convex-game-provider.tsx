@@ -102,6 +102,8 @@ function toEventState(
         hostName: room.hostName,
         status: room.status,
         rotationGroups: room.rotationGroups,
+        capacity: protectedRoom?.capacity ?? room.capacity ?? 12,
+        memberCount: protectedRoom?.memberCount,
         externalUrl: protectedRoom?.externalUrl ?? room.externalUrl,
         hasActiveHostGrant: protectedRoom?.hostGrantActive ?? false,
       };
@@ -115,8 +117,10 @@ function toEventState(
       ageBand: question.ageBand as JeopardyQuestion["ageBand"],
       sourceId: question.sourceId,
       used: question.used,
+      round: (question.round ?? 1) as 1 | 2,
     })),
     currentQuestionId: data.game?.currentQuestionId ?? undefined,
+    jeopardyRound: (data.game?.activeRound ?? 1) as 1 | 2,
     buzzWindow: data.buzzWindow
       ? {
           id: data.buzzWindow._id,
@@ -235,6 +239,10 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
   const issueHostGrant = useMutation(api.rooms.issueHostGrant);
   const revokeHostGrant = useMutation(api.rooms.revokeHostGrant);
   const awardRoomResultAsHost = useMutation(api.rooms.awardRoomResult);
+  const clearParticipantsMutation = useMutation(api.events.clearParticipants);
+  const createRoomMutation = useMutation(api.rooms.createRoom);
+  const setRoomCapacityMutation = useMutation(api.rooms.setRoomCapacity);
+  const setJeopardyRound = useMutation(api.jeopardy.setRound);
 
   const answers = useMemo(() => {
     const map = new Map<string, string>();
@@ -271,6 +279,8 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
           return run(judge({ eventId, correct: false, hostPin: pin }));
         case "return-to-board":
           return run(returnToBoard({ eventId, hostPin: pin }));
+        case "set-jeopardy-round":
+          return run(setJeopardyRound({ eventId, round: action.round, hostPin: pin }));
         case "adjust-score": {
           const teamId = mapped.teamIdBySlug.get(action.teamId);
           if (teamId) {
@@ -293,7 +303,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
           return;
       }
     },
-    [eventId, mapped, hostPin, sessionToken, selectQuestion, openBuzzers, buzz, judge, returnToBoard, adjustScore, undoScore, setPhase],
+    [eventId, mapped, hostPin, sessionToken, selectQuestion, openBuzzers, buzz, judge, returnToBoard, setJeopardyRound, adjustScore, undoScore, setPhase],
   );
 
   const join = useCallback(
@@ -403,6 +413,22 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
     [adjustScore, awardRoomResultAsHost, eventId, hostPin, mapped, roomHostToken],
   );
 
+  const clearParticipants = useCallback(async (confirmation: string, expectedCount: number) => {
+    if (!eventId || !hostPin) throw new Error("Game Master access is required.");
+    const result = await clearParticipantsMutation({ eventId, hostPin, confirmation, expectedCount });
+    return result.cleared;
+  }, [clearParticipantsMutation, eventId, hostPin]);
+
+  const createRoom = useCallback(async (input: { name: string; game: "imposter" | "gartic"; capacity: number; rotationGroups: string[] }) => {
+    if (!eventId || !hostPin) throw new Error("Game Master access is required.");
+    await createRoomMutation({ eventId, hostPin, ...input });
+  }, [createRoomMutation, eventId, hostPin]);
+
+  const setRoomCapacity = useCallback(async (roomId: string, capacity: number) => {
+    if (!hostPin) throw new Error("Game Master access is required.");
+    await setRoomCapacityMutation({ roomId: roomId as Id<"breakoutRooms">, capacity, hostPin });
+  }, [hostPin, setRoomCapacityMutation]);
+
   // undefined = lookup in flight, null = this device has not joined the event.
   const identity = useMemo(
     () =>
@@ -430,6 +456,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
       status: me.currentRoom.status,
       rotationGroups: me.currentRoom.rotationGroups,
       externalUrl: me.currentRoom.externalUrl,
+      capacity: me.currentRoom.capacity ?? 12,
     };
   }, [me]);
 
@@ -446,6 +473,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
         hostName: roomHostData.room.hostName,
         status: roomHostData.room.status,
         rotationGroups: roomHostData.room.rotationGroups,
+        capacity: roomHostData.room.capacity ?? 12,
         externalUrl: roomHostData.room.externalUrl,
       },
       members: roomHostData.players.map((player) => ({
@@ -480,6 +508,9 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
             revokeRoomHostLink,
             setRoomCode,
             awardRoomResult,
+            clearParticipants,
+            createRoom,
+            setRoomCapacity,
           }
         : null,
     [
@@ -500,6 +531,9 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
       revokeRoomHostLink,
       setRoomCode,
       awardRoomResult,
+      clearParticipants,
+      createRoom,
+      setRoomCapacity,
     ],
   );
 

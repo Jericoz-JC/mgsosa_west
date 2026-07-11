@@ -101,6 +101,7 @@ export const me = query({
             status: room.status,
             rotationGroups: room.rotationGroups,
             externalUrl: room.externalUrl,
+            capacity: room.capacity ?? 12,
           };
         }
       }
@@ -149,6 +150,7 @@ export const publicState = query({
         hostName: room.hostName,
         status: room.status,
         rotationGroups: room.rotationGroups,
+        capacity: room.capacity ?? 12,
         externalUrl: undefined,
       })),
       questions: questions.map((question) => ({
@@ -160,6 +162,7 @@ export const publicState = query({
         value: question.value,
         clue: question.clue,
         ageBand: question.ageBand,
+        round: question.round ?? 1,
         used: question.used,
       })),
       scoreEvents,
@@ -179,5 +182,49 @@ export const setPhase = mutation({
       activeRoomMessage: args.message,
       phaseStartedAt: Date.now(),
     });
+  },
+});
+
+export const clearParticipants = mutation({
+  args: {
+    eventId: v.id("events"),
+    hostPin: v.string(),
+    confirmation: v.string(),
+    expectedCount: v.number(),
+  },
+  handler: async (ctx, args) => {
+    assertHostPin(args.hostPin);
+    if (args.confirmation !== "CLEAR PARTICIPANTS") throw new ConvexError("Type CLEAR PARTICIPANTS exactly.");
+    const event = await ctx.db.get(args.eventId);
+    if (!event) throw new ConvexError("Event not found.");
+    if (event.phase !== "lobby") throw new ConvexError("Participants can only be cleared while the event is in the lobby.");
+    const players = (await ctx.db.query("players").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).collect())
+      .filter((player) => player.role === "participant");
+    if (players.length !== args.expectedCount) throw new ConvexError("The attendance count changed. Review it and confirm again.");
+    const playerIds = new Set(players.map((player) => String(player._id)));
+    const rooms = await ctx.db.query("breakoutRooms").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).collect();
+    for (const room of rooms) {
+      const rounds = await ctx.db.query("imposterRounds").withIndex("by_room", (q) => q.eq("roomId", room._id)).collect();
+      for (const round of rounds) {
+        const assignments = await ctx.db.query("secretAssignments").withIndex("by_round", (q) => q.eq("roundId", round._id)).collect();
+        for (const assignment of assignments) if (playerIds.has(String(assignment.playerId))) await ctx.db.delete(assignment._id);
+        const votes = await ctx.db.query("votes").withIndex("by_round", (q) => q.eq("roundId", round._id)).collect();
+        for (const vote of votes) {
+          if (playerIds.has(String(vote.voterPlayerId)) || playerIds.has(String(vote.accusedPlayerId))) await ctx.db.delete(vote._id);
+        }
+      }
+    }
+    const windows = await ctx.db.query("buzzWindows").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).collect();
+    for (const window of windows) {
+      if (window.winnerPlayerId && playerIds.has(String(window.winnerPlayerId))) {
+        await ctx.db.patch(window._id, { status: "locked", winnerPlayerId: undefined, claimedAt: undefined });
+      }
+    }
+    for (const player of players) {
+      const memberships = await ctx.db.query("roomMembers").withIndex("by_player", (q) => q.eq("playerId", player._id)).collect();
+      for (const membership of memberships) await ctx.db.delete(membership._id);
+      await ctx.db.delete(player._id);
+    }
+    return { cleared: players.length };
   },
 });
