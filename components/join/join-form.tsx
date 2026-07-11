@@ -5,21 +5,14 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { ConvexError } from "convex/values";
 import { useGame } from "@/components/game/game-provider";
+import { OTHER_CHURCH_VALUE, WEST_REGION_CHURCHES } from "@/lib/game/churches";
 import { matchesEventCode, safeJoin } from "@/lib/game/join";
-
-const churches = [
-  "St. Mary’s",
-  "St. George",
-  "St. Thomas",
-  "St. Peter",
-  "St. Gregorios",
-  "Other / Visiting",
-];
 
 export function JoinForm() {
   const router = useRouter();
   const { join, state } = useGame();
   const [values, setValues] = useState({ eventCode: state.eventCode, name: "", church: "" });
+  const [churchChoice, setChurchChoice] = useState("");
   const [error, setError] = useState<string>();
   const [joining, setJoining] = useState(false);
 
@@ -83,13 +76,35 @@ export function JoinForm() {
         <select
           id="church"
           name="church"
-          value={values.church}
-          onChange={(event) => setValues({ ...values, church: event.target.value })}
+          value={churchChoice}
+          onChange={(event) => {
+            const choice = event.target.value;
+            setChurchChoice(choice);
+            setValues({ ...values, church: choice === OTHER_CHURCH_VALUE ? "" : choice });
+          }}
         >
           <option value="">Choose your church</option>
-          {churches.map((church) => <option key={church}>{church}</option>)}
+          {WEST_REGION_CHURCHES.map((church) => <option key={church}>{church}</option>)}
+          <option value={OTHER_CHURCH_VALUE}>Other church / visiting</option>
         </select>
       </div>
+
+      {churchChoice === OTHER_CHURCH_VALUE ? (
+        <div className="field other-church-field">
+          <label htmlFor="otherChurch">Enter your church</label>
+          <input
+            id="otherChurch"
+            name="otherChurch"
+            autoComplete="organization"
+            maxLength={64}
+            value={values.church}
+            onChange={(event) => setValues({ ...values, church: event.target.value })}
+            placeholder="Church name + city"
+            aria-describedby="other-church-help"
+          />
+          <small id="other-church-help">This will be visible to event staff exactly as entered.</small>
+        </div>
+      ) : null}
 
       {error ? <p className="form-error" role="alert">{error}</p> : null}
 

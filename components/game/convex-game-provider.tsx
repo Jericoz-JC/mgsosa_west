@@ -71,8 +71,17 @@ function toEventState(
       color: team.color,
       accent: team.accent,
     })),
-    players: data.winner
-      ? [
+    players: hostRoomState?.players
+      ? hostRoomState.players.map((player) => ({
+          id: player.playerId,
+          name: player.name,
+          church: player.church,
+          teamId: slugOf(player.teamId),
+          role: "participant" as const,
+          connected: Date.now() - player.lastSeenAt < 15 * 60 * 1000,
+        }))
+      : data.winner
+        ? [
           {
             id: data.winner._id,
             name: data.winner.name,
@@ -81,8 +90,8 @@ function toEventState(
             role: "participant",
             connected: true,
           },
-        ]
-      : [],
+          ]
+        : [],
     breakoutRooms: data.rooms.map((room) => {
       const protectedRoom = protectedRoomById.get(room._id);
       return {
