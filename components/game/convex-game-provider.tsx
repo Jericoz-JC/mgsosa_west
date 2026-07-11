@@ -3,14 +3,28 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ConvexProvider, ConvexReactClient, useConvex, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
+import { usePathname } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import {
+  buildRoomHostLink,
+  generateRoomHostToken,
+  isRoomHostToken,
+  ROOM_HOST_SESSION_KEY,
+} from "@/lib/game/room-host";
 import { sessionBelongsToEvent, sessionTokenStorageKey } from "@/lib/game/session";
-import type { EventPhase, EventState, GameAction, JeopardyQuestion, TeamId } from "@/lib/game/types";
+import type {
+  EventPhase,
+  EventState,
+  GameAction,
+  ParticipantRoom,
+  RoomHostView,
+  TeamId,
+  JeopardyQuestion,
+} from "@/lib/game/types";
 import { GameContext, type GameContextValue, type JoinRequest } from "./game-context";
 
 const HOST_PIN_KEY = "mgsosa-west-host-pin";
-const ROOM_PIN_KEY = "mgsosa-west-room-pin";
 const EVENT_CODE = process.env.NEXT_PUBLIC_EVENT_CODE ?? "WEST26";
 const SESSION_TOKEN_KEY = sessionTokenStorageKey(EVENT_CODE);
 
@@ -24,11 +38,17 @@ function getSessionToken() {
 }
 
 type PublicState = NonNullable<FunctionReturnType<typeof api.events.publicState>>;
+type HostRoomState = NonNullable<FunctionReturnType<typeof api.rooms.hostState>>;
 
 function toEventState(
   data: PublicState,
   answers: Map<string, string>,
-): { state: EventState; teamIdBySlug: Map<TeamId, Id<"teams">> } {
+  hostRoomState?: HostRoomState,
+): {
+  state: EventState;
+  teamIdBySlug: Map<TeamId, Id<"teams">>;
+  teamSlugById: Map<string, TeamId>;
+} {
   const slugByTeamId = new Map<string, TeamId>();
   const teamIdBySlug = new Map<TeamId, Id<"teams">>();
   for (const team of data.teams) {
@@ -36,6 +56,7 @@ function toEventState(
     teamIdBySlug.set(team.slug as TeamId, team._id);
   }
   const slugOf = (teamId: string) => slugByTeamId.get(teamId) ?? "pacific";
+  const protectedRoomById = new Map(hostRoomState?.rooms.map((room) => [room._id, room]) ?? []);
 
   const state: EventState = {
     eventCode: data.event.code,
@@ -62,16 +83,20 @@ function toEventState(
           },
         ]
       : [],
-    breakoutRooms: data.rooms.map((room) => ({
-      id: room._id,
-      name: room.name,
-      game: room.game,
-      code: room.code,
-      hostName: room.hostName,
-      status: room.status,
-      rotationGroups: room.rotationGroups,
-      externalUrl: room.externalUrl,
-    })),
+    breakoutRooms: data.rooms.map((room) => {
+      const protectedRoom = protectedRoomById.get(room._id);
+      return {
+        id: room._id,
+        name: room.name,
+        game: room.game,
+        code: protectedRoom?.code ?? room.code,
+        hostName: room.hostName,
+        status: room.status,
+        rotationGroups: room.rotationGroups,
+        externalUrl: protectedRoom?.externalUrl ?? room.externalUrl,
+        hasActiveHostGrant: protectedRoom?.hostGrantActive ?? false,
+      };
+    }),
     questions: data.questions.map((question) => ({
       id: question._id,
       category: question.category,
@@ -109,7 +134,7 @@ function toEventState(
       answerSeconds: data.event.answerSeconds,
     },
   };
-  return { state, teamIdBySlug };
+  return { state, teamIdBySlug, teamSlugById: slugByTeamId };
 }
 
 function ConnectionScreen({ title, detail }: { title: string; detail: string }) {
@@ -125,9 +150,11 @@ function ConnectionScreen({ title, detail }: { title: string; detail: string }) 
 
 function ConvexGameState({ children }: { children: React.ReactNode }) {
   const convex = useConvex();
+  const pathname = usePathname();
+  const isHostRoute = pathname === "/host" || pathname.startsWith("/host/");
   const [sessionToken, setSessionToken] = useState<string>();
   const [hostPin, setHostPin] = useState<string | null>(null);
-  const [roomPin, setRoomPin] = useState<string | null>(null);
+  const [roomHostToken, setRoomHostToken] = useState<string | null>(null);
   const [credentialsReady, setCredentialsReady] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -138,8 +165,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
       if (!cancelled) setSessionToken(token);
     });
     const storedHostPin = window.sessionStorage.getItem(HOST_PIN_KEY);
-    const storedRoomPin = window.sessionStorage.getItem(ROOM_PIN_KEY);
-    if (!storedHostPin && !storedRoomPin) {
+    if (!storedHostPin) {
       queueMicrotask(() => {
         if (!cancelled) setCredentialsReady(true);
       });
@@ -148,31 +174,15 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
       };
     }
 
-    const checks: Promise<void>[] = [];
-    if (storedHostPin) {
-      checks.push(
-        convex.query(api.events.verifyHostPin, { hostPin: storedHostPin }).then((valid) => {
-          if (cancelled) return;
-          if (valid) setHostPin(storedHostPin);
-          else window.sessionStorage.removeItem(HOST_PIN_KEY);
-        }).catch(() => {
-          if (!cancelled) window.sessionStorage.removeItem(HOST_PIN_KEY);
-        }),
-      );
-    }
-    if (storedRoomPin) {
-      checks.push(
-        convex.query(api.events.verifyRoomPin, { roomPin: storedRoomPin }).then((valid) => {
-          if (cancelled) return;
-          if (valid) setRoomPin(storedRoomPin);
-          else window.sessionStorage.removeItem(ROOM_PIN_KEY);
-        }).catch(() => {
-          if (!cancelled) window.sessionStorage.removeItem(ROOM_PIN_KEY);
-        }),
-      );
-    }
-
-    void Promise.all(checks)
+    void convex.query(api.events.verifyHostPin, { hostPin: storedHostPin })
+      .then((valid) => {
+        if (cancelled) return;
+        if (valid) setHostPin(storedHostPin);
+        else window.sessionStorage.removeItem(HOST_PIN_KEY);
+      })
+      .catch(() => {
+        if (!cancelled) window.sessionStorage.removeItem(HOST_PIN_KEY);
+      })
       .finally(() => {
         if (!cancelled) setCredentialsReady(true);
       });
@@ -190,10 +200,19 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
   const eventId = data?.event._id;
   const hostView = useQuery(
     api.jeopardy.hostState,
-    hostPin && eventId ? { eventId, hostPin } : "skip",
+    hostPin && eventId && isHostRoute ? { eventId, hostPin } : "skip",
+  );
+  const hostRoomState = useQuery(
+    api.rooms.hostState,
+    hostPin && eventId && isHostRoute ? { eventId, hostPin } : "skip",
+  );
+  const roomHostData = useQuery(
+    api.rooms.roomHostState,
+    roomHostToken ? { token: roomHostToken } : "skip",
   );
 
   const joinEvent = useMutation(api.events.join);
+  const joinBreakoutRoom = useMutation(api.rooms.joinRoom);
   const setPhase = useMutation(api.events.setPhase);
   const selectQuestion = useMutation(api.jeopardy.selectQuestion);
   const openBuzzers = useMutation(api.jeopardy.openBuzzers);
@@ -202,7 +221,11 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
   const returnToBoard = useMutation(api.jeopardy.returnToBoard);
   const adjustScore = useMutation(api.scores.adjust);
   const undoScore = useMutation(api.scores.undoLast);
-  const setCode = useMutation(api.rooms.setCode);
+  const setCodeAsHost = useMutation(api.rooms.setCodeAsHost);
+  const setCodeAsRoomHost = useMutation(api.rooms.setCodeAsRoomHost);
+  const issueHostGrant = useMutation(api.rooms.issueHostGrant);
+  const revokeHostGrant = useMutation(api.rooms.revokeHostGrant);
+  const awardRoomResultAsHost = useMutation(api.rooms.awardRoomResult);
 
   const answers = useMemo(() => {
     const map = new Map<string, string>();
@@ -210,13 +233,15 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
     return map;
   }, [hostView]);
 
-  const mapped = useMemo(() => (data ? toEventState(data, answers) : null), [data, answers]);
+  const mapped = useMemo(
+    () => (data ? toEventState(data, answers, hostRoomState ?? undefined) : null),
+    [data, answers, hostRoomState],
+  );
 
   const dispatch = useCallback(
     (action: GameAction) => {
       if (!eventId || !mapped) return;
       const pin = hostPin ?? "";
-      const staffPin = hostPin ?? roomPin ?? "";
       const run = (promise: Promise<unknown>) =>
         promise.catch((error: unknown) => {
           console.error("Convex action failed", action.type, error);
@@ -245,7 +270,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
               teamId,
               delta: action.delta,
               reason: action.reason,
-              hostPin: staffPin,
+              hostPin: pin,
               idempotencyKey: action.idempotencyKey,
             }));
           }
@@ -259,7 +284,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
           return;
       }
     },
-    [eventId, mapped, hostPin, roomPin, sessionToken, selectQuestion, openBuzzers, buzz, judge, returnToBoard, adjustScore, undoScore, setPhase],
+    [eventId, mapped, hostPin, sessionToken, selectQuestion, openBuzzers, buzz, judge, returnToBoard, adjustScore, undoScore, setPhase],
   );
 
   const join = useCallback(
@@ -269,6 +294,16 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
       await joinEvent({ eventCode: input.eventCode, sessionToken: token, name: input.name, church: input.church });
     },
     [joinEvent],
+  );
+
+  const joinRoom = useCallback(
+    async (code: string) => {
+      if (!sessionToken) throw new Error("Join the main event first.");
+      setActionError(null);
+      const result = await joinBreakoutRoom({ code: code.trim(), sessionToken });
+      if (!result.ok) throw new Error(result.error);
+    },
+    [joinBreakoutRoom, sessionToken],
   );
 
   const submitHostPin = useCallback(
@@ -288,33 +323,75 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
     setHostPin(null);
   }, []);
 
-  const submitRoomPin = useCallback(
-    async (pin: string) => {
-      const valid = await convex.query(api.events.verifyRoomPin, { roomPin: pin });
-      if (valid) {
-        window.sessionStorage.setItem(ROOM_PIN_KEY, pin);
-        setRoomPin(pin);
-      }
-      return valid;
+  const activateRoomHost = useCallback((token: string) => {
+    setRoomHostToken(isRoomHostToken(token) ? token : null);
+  }, []);
+
+  const clearRoomHost = useCallback(() => {
+    window.sessionStorage.removeItem(ROOM_HOST_SESSION_KEY);
+    setRoomHostToken(null);
+  }, []);
+
+  const issueRoomHostLink = useCallback(
+    async (roomId: string) => {
+      if (!hostPin) throw new Error("Game Master access is required.");
+      const token = generateRoomHostToken();
+      await issueHostGrant({ roomId: roomId as Id<"breakoutRooms">, token, hostPin });
+      return buildRoomHostLink(window.location.origin, token);
     },
-    [convex],
+    [hostPin, issueHostGrant],
   );
 
-  const clearRoomPin = useCallback(() => {
-    window.sessionStorage.removeItem(ROOM_PIN_KEY);
-    setRoomPin(null);
-  }, []);
+  const revokeRoomHostLink = useCallback(
+    async (roomId: string) => {
+      if (!hostPin) throw new Error("Game Master access is required.");
+      await revokeHostGrant({ roomId: roomId as Id<"breakoutRooms">, hostPin });
+    },
+    [hostPin, revokeHostGrant],
+  );
 
   const setRoomCode = useCallback(
     async (roomId: string, code: string) => {
       setActionError(null);
-      await setCode({ roomId: roomId as Id<"breakoutRooms">, code, hostPin: hostPin ?? roomPin ?? "" }).catch((error: unknown) => {
+      const mutation = hostPin
+        ? setCodeAsHost({ roomId: roomId as Id<"breakoutRooms">, code, hostPin })
+        : roomHostToken
+          ? setCodeAsRoomHost({ token: roomHostToken, code })
+          : Promise.reject(new Error("Room host access is required."));
+      await mutation.catch((error: unknown) => {
         console.error("Room code update failed", error);
-        setActionError("Could not update the room code. Check your connection or staff access and try again.");
+        setActionError("Could not update the room code. Check your connection or room-host link and try again.");
         throw error;
       });
     },
-    [setCode, hostPin, roomPin],
+    [hostPin, roomHostToken, setCodeAsHost, setCodeAsRoomHost],
+  );
+
+  const awardRoomResult = useCallback(
+    async (roomId: string, teamId: TeamId, reason: string, idempotencyKey: string) => {
+      if (!eventId || !mapped) throw new Error("Event is not ready.");
+      const teamDocumentId = mapped.teamIdBySlug.get(teamId);
+      if (!teamDocumentId) throw new Error("Team is not available.");
+      setActionError(null);
+      const mutation = hostPin
+        ? adjustScore({
+              eventId,
+              teamId: teamDocumentId,
+              delta: 200,
+              reason,
+              hostPin,
+              idempotencyKey,
+            })
+        : roomHostToken
+          ? awardRoomResultAsHost({ token: roomHostToken, teamId: teamDocumentId })
+          : Promise.reject(new Error("Room host access is required."));
+      await mutation.catch((error: unknown) => {
+        console.error("Room result failed", roomId, error);
+        setActionError("Could not submit the room result. Check your connection and try again.");
+        throw error;
+      });
+    },
+    [adjustScore, awardRoomResultAsHost, eventId, hostPin, mapped, roomHostToken],
   );
 
   // undefined = lookup in flight, null = this device has not joined the event.
@@ -334,6 +411,44 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
     [data, eventId, me],
   );
 
+  const currentRoom = useMemo<ParticipantRoom | null | undefined>(() => {
+    if (me === undefined) return undefined;
+    if (!me?.currentRoom) return null;
+    return {
+      id: me.currentRoom.roomId,
+      name: me.currentRoom.name,
+      game: me.currentRoom.game,
+      status: me.currentRoom.status,
+      rotationGroups: me.currentRoom.rotationGroups,
+      externalUrl: me.currentRoom.externalUrl,
+    };
+  }, [me]);
+
+  const roomHostView = useMemo<RoomHostView | null | undefined>(() => {
+    if (!roomHostToken) return null;
+    if (roomHostData === undefined || !mapped) return undefined;
+    if (roomHostData === null) return null;
+    return {
+      room: {
+        id: roomHostData.room._id,
+        name: roomHostData.room.name,
+        game: roomHostData.room.game,
+        code: roomHostData.room.code,
+        hostName: roomHostData.room.hostName,
+        status: roomHostData.room.status,
+        rotationGroups: roomHostData.room.rotationGroups,
+        externalUrl: roomHostData.room.externalUrl,
+      },
+      members: roomHostData.players.map((player) => ({
+        id: player.playerId,
+        name: player.name,
+        church: player.church,
+        teamId: mapped.teamSlugById.get(player.teamId) ?? "pacific",
+      })),
+      expiresAt: roomHostData.grantExpiresAt,
+    };
+  }, [mapped, roomHostData, roomHostToken]);
+
   const value = useMemo<GameContextValue | null>(
     () =>
       mapped && credentialsReady
@@ -343,17 +458,40 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
             dispatch,
             reset: clearHostPin,
             identity,
+            currentRoom,
             join,
+            joinRoom,
             hostPin,
-            roomPin,
             submitHostPin,
-            submitRoomPin,
             clearHostPin,
-            clearRoomPin,
+            roomHostView,
+            activateRoomHost,
+            clearRoomHost,
+            issueRoomHostLink,
+            revokeRoomHostLink,
             setRoomCode,
+            awardRoomResult,
           }
         : null,
-    [mapped, credentialsReady, dispatch, identity, join, hostPin, roomPin, submitHostPin, submitRoomPin, clearHostPin, clearRoomPin, setRoomCode],
+    [
+      mapped,
+      credentialsReady,
+      dispatch,
+      identity,
+      currentRoom,
+      join,
+      joinRoom,
+      hostPin,
+      submitHostPin,
+      clearHostPin,
+      roomHostView,
+      activateRoomHost,
+      clearRoomHost,
+      issueRoomHostLink,
+      revokeRoomHostLink,
+      setRoomCode,
+      awardRoomResult,
+    ],
   );
 
   if (data === undefined || !credentialsReady) {

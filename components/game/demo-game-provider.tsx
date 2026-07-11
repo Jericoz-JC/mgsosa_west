@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { gameReducer } from "@/lib/game/engine";
+import { buildRoomHostLink, generateRoomHostToken } from "@/lib/game/room-host";
 import { createSeedState } from "@/lib/game/seed";
-import type { EventState, GameAction } from "@/lib/game/types";
+import type { EventState, GameAction, ParticipantRoom } from "@/lib/game/types";
 import { GameContext, type GameContextValue, type JoinRequest } from "./game-context";
 
 const STORAGE_KEY = "mgsosa-west-demo-state-v1";
@@ -16,6 +17,15 @@ function initializer() {
 export function DemoGameProvider({ children }: { children: React.ReactNode }) {
   const [state, baseDispatch] = useReducer(gameReducer, undefined, initializer);
   const [hydrated, setHydrated] = useState(false);
+  const [roomMembership, setRoomMembership] = useState<{
+    room: ParticipantRoom;
+    phaseStartedAt: number;
+  }>();
+  const currentRoom =
+    (state.phase === "rotation-one" || state.phase === "rotation-two") &&
+    roomMembership?.phaseStartedAt === state.phaseStartedAt
+      ? roomMembership.room
+      : null;
 
   useEffect(() => {
     try {
@@ -49,6 +59,24 @@ export function DemoGameProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const joinRoom = useCallback(async (code: string) => {
+    const room = state.breakoutRooms.find((candidate) => candidate.code === code.trim());
+    if (!room || !["open", "in-progress"].includes(room.status)) {
+      throw new Error("Room code not found or no longer open.");
+    }
+    setRoomMembership({
+      phaseStartedAt: state.phaseStartedAt,
+      room: {
+        id: room.id,
+        name: room.name,
+        game: room.game,
+        status: room.status,
+        rotationGroups: room.rotationGroups,
+        externalUrl: room.externalUrl,
+      },
+    });
+  }, [state.breakoutRooms, state.phaseStartedAt]);
+
   useEffect(() => {
     if (!hydrated) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -68,16 +96,23 @@ export function DemoGameProvider({ children }: { children: React.ReactNode }) {
       dispatch,
       reset,
       identity: null,
+      currentRoom,
       join,
+      joinRoom,
       hostPin: "demo",
-      roomPin: "demo",
       submitHostPin: async () => true,
-      submitRoomPin: async () => true,
       clearHostPin: () => {},
-      clearRoomPin: () => {},
-      setRoomCode: async () => {},
+      roomHostView: null,
+      activateRoomHost: () => {},
+      clearRoomHost: () => {},
+      issueRoomHostLink: async () => buildRoomHostLink(window.location.origin, generateRoomHostToken()),
+      revokeRoomHostLink: async () => {},
+      setRoomCode: async (roomId, code) => dispatch({ type: "set-room-code", roomId, code }),
+      awardRoomResult: async (_roomId, teamId, reason, idempotencyKey) => {
+        dispatch({ type: "adjust-score", teamId, delta: 200, reason, idempotencyKey, at: Date.now() });
+      },
     }),
-    [state, dispatch, reset, join],
+    [state, dispatch, reset, currentRoom, join, joinRoom],
   );
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 }

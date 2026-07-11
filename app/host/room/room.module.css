@@ -126,7 +126,18 @@
 .codeBox {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 10px;
+}
+
+.copyFeedback {
+  flex-basis: 100%;
+  color: var(--sky-300);
+  font-size: 0.6rem;
+  font-style: normal;
+  font-weight: 750;
+  text-align: right;
 }
 
 .codeBox small {
@@ -253,6 +264,78 @@
   width: 100%;
 }
 
+.hostLinkCard > button + button {
+  margin-top: 9px;
+}
+
+.revokeLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(152, 72, 63, 0.28);
+  border-radius: 8px;
+  color: var(--coral);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.linkReceipt {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 11px;
+  border: 1px dashed rgba(71, 111, 92, 0.5);
+  border-radius: 8px;
+  color: var(--green);
+  background: #edf2eb;
+}
+
+.linkReceipt span strong,
+.linkReceipt span small {
+  display: block;
+}
+
+.linkReceipt span strong {
+  font-size: 0.75rem;
+}
+
+.linkReceipt span small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+.linkReceipt button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--navy-900);
+  background: white;
+  cursor: pointer;
+}
+
+.linkReceipt input {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--navy-900);
+  background: white;
+  font-size: 0.64rem;
+}
+
 .sideRail ul {
   display: grid;
   gap: 3px;
@@ -339,7 +422,17 @@
   }
 
   .roomBar {
+    flex-direction: column;
     align-items: flex-start;
+  }
+
+  .codeBox {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .copyFeedback {
+    text-align: left;
   }
 
   .codeBox small {

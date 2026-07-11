@@ -20,7 +20,7 @@ export function HostShell({ children }: { children: React.ReactNode }) {
   const { state, reset, mode, clearHostPin } = useGame();
 
   return (
-    <StaffPinGate access="host">
+    <StaffPinGate>
       <div className={styles.shell}>
         <aside className={styles.sidebar}>
           <BrandLockup href="/host" inverse />
@@ -29,7 +29,7 @@ export function HostShell({ children }: { children: React.ReactNode }) {
               const Icon = item.icon;
               const active = item.href === "/host" ? pathname === "/host" : pathname.startsWith(item.href);
               return (
-                <Link className={active ? styles.active : undefined} href={item.href} key={item.href} target={item.external ? "_blank" : undefined}>
+                <Link className={active ? styles.active : undefined} href={item.href} key={item.href} target={item.external ? "_blank" : undefined} rel={item.external ? "noopener" : undefined}>
                   <Icon aria-hidden size={19} />
                   <span>{item.label}</span>
                   {item.external ? <ExternalLink className={styles.external} aria-hidden size={13} /> : null}

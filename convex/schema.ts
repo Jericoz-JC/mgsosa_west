@@ -45,7 +45,8 @@ export default defineSchema({
     externalUrl: v.optional(v.string()),
   })
     .index("by_event", ["eventId"])
-    .index("by_code", ["code"]),
+    .index("by_code", ["code"])
+    .index("by_event_code", ["eventId", "code"]),
 
   roomMembers: defineTable({
     roomId: v.id("breakoutRooms"),
@@ -53,7 +54,19 @@ export default defineSchema({
     joinedAt: v.number(),
   })
     .index("by_room", ["roomId"])
-    .index("by_player", ["playerId"]),
+    .index("by_player", ["playerId"])
+    .index("by_player_room", ["playerId", "roomId"]),
+
+  roomHostGrants: defineTable({
+    eventId: v.id("events"),
+    roomId: v.id("breakoutRooms"),
+    tokenHash: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+    revokedAt: v.optional(v.number()),
+  })
+    .index("by_token_hash", ["tokenHash"])
+    .index("by_room", ["roomId"]),
 
   questions: defineTable({
     eventId: v.id("events"),

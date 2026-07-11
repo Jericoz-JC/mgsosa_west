@@ -4,10 +4,8 @@ import { useState } from "react";
 import { KeyRound } from "lucide-react";
 import { useGame } from "@/components/game/game-provider";
 
-type StaffAccess = "host" | "room";
-
-function PinForm({ access }: { access: StaffAccess }) {
-  const { submitHostPin, submitRoomPin } = useGame();
+function PinForm() {
+  const { submitHostPin } = useGame();
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string>();
   const [checking, setChecking] = useState(false);
@@ -17,7 +15,7 @@ function PinForm({ access }: { access: StaffAccess }) {
     setChecking(true);
     setError(undefined);
     try {
-      const valid = await (access === "host" ? submitHostPin(pin.trim()) : submitRoomPin(pin.trim()));
+      const valid = await submitHostPin(pin.trim());
       if (!valid) setError("That PIN was not accepted. Check with the Game Master.");
     } catch {
       setError("Could not verify the PIN. Check your connection and try again.");
@@ -31,11 +29,8 @@ function PinForm({ access }: { access: StaffAccess }) {
       <form className="join-form" onSubmit={submit} style={{ maxWidth: "26rem", width: "100%" }}>
         <div className="join-form-heading">
           <span className="status-pill status-live"><KeyRound size={13} /> Staff access</span>
-          <h2>{access === "host" ? "Game Master console" : "Room staff console"}</h2>
-          <p>
-            Enter the {access === "host" ? "Game Master" : "room staff"} PIN.
-            {access === "room" ? " This PIN cannot open Game Master controls." : " Participants never need this."}
-          </p>
+          <h2>Game Master console</h2>
+          <p>Enter the Game Master PIN. Participants and room volunteers never need it.</p>
         </div>
         <div className="field">
           <label htmlFor="hostPin">Staff PIN</label>
@@ -59,12 +54,11 @@ function PinForm({ access }: { access: StaffAccess }) {
 }
 
 /**
- * Blocks staff surfaces (host console, room-admin console) until the host PIN
- * has been verified against the Convex deployment. Demo mode passes through.
+ * Blocks Game Master surfaces until the host PIN has been verified against the
+ * Convex deployment. Room volunteers use scoped private links instead.
  */
-export function StaffPinGate({ children, access = "host" }: { children: React.ReactNode; access?: StaffAccess }) {
-  const { mode, hostPin, roomPin } = useGame();
-  const authorized = access === "host" ? hostPin : roomPin || hostPin;
-  if (mode === "convex" && !authorized) return <PinForm access={access} />;
+export function StaffPinGate({ children }: { children: React.ReactNode }) {
+  const { mode, hostPin } = useGame();
+  if (mode === "convex" && !hostPin) return <PinForm />;
   return <>{children}</>;
 }

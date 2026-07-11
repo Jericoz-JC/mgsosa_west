@@ -1,6 +1,6 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
-import { assertHostPin, assertStaffPin } from "./security";
+import { assertHostPin } from "./security";
 
 export const adjust = mutation({
   args: {
@@ -12,7 +12,12 @@ export const adjust = mutation({
     idempotencyKey: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    assertStaffPin(args.hostPin);
+    assertHostPin(args.hostPin);
+    const [event, team] = await Promise.all([ctx.db.get(args.eventId), ctx.db.get(args.teamId)]);
+    if (!event) throw new ConvexError("Event not found.");
+    if (!team || team.eventId !== event._id) {
+      throw new ConvexError("That team does not belong to this event.");
+    }
     if (args.idempotencyKey) {
       const existing = await ctx.db
         .query("scoreEvents")

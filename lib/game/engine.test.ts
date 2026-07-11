@@ -81,4 +81,15 @@ describe("Jeopardy game engine", () => {
     expect(getTeamScore(once, "pacific")).toBe(500);
     expect(getTeamScore(twice, "pacific")).toBe(500);
   });
+
+  it("updates a temporary room code in shared demo state", () => {
+    const state = createSeedState(1000);
+    const updated = gameReducer(state, {
+      type: "set-room-code",
+      roomId: "room-gartic-a",
+      code: "86420",
+    });
+
+    expect(updated.breakoutRooms.find((room) => room.id === "room-gartic-a")?.code).toBe("86420");
+  });
 });

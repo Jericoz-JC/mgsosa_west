@@ -69,6 +69,25 @@ export interface BreakoutRoom {
   status: "draft" | "open" | "in-progress" | "closed";
   rotationGroups: string[];
   externalUrl?: string;
+  hasActiveHostGrant?: boolean;
+}
+
+export type ParticipantRoom = Pick<
+  BreakoutRoom,
+  "id" | "name" | "game" | "status" | "rotationGroups" | "externalUrl"
+>;
+
+export interface RoomHostMember {
+  id: string;
+  name: string;
+  church: string;
+  teamId: TeamId;
+}
+
+export interface RoomHostView {
+  room: BreakoutRoom;
+  members: RoomHostMember[];
+  expiresAt: number;
 }
 
 export interface EventState {
@@ -100,6 +119,7 @@ export type GameAction =
   | { type: "return-to-board" }
   | { type: "adjust-score"; teamId: TeamId; delta: number; reason: string; at: number; idempotencyKey?: string }
   | { type: "undo-score" }
+  | { type: "set-room-code"; roomId: string; code: string }
   | { type: "set-phase"; phase: EventPhase; message: string; at: number };
 
 export interface BuzzClaimResult {
