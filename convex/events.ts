@@ -1,24 +1,12 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { assertHostPin, assertRoomPin, normalizeCode } from "./security";
+import { assertHostPin, normalizeCode } from "./security";
 
 export const verifyHostPin = query({
   args: { hostPin: v.string() },
   handler: async (_ctx, args) => {
     const expected = process.env.HOST_PIN;
     return Boolean(expected) && args.hostPin === expected;
-  },
-});
-
-export const verifyRoomPin = query({
-  args: { roomPin: v.string() },
-  handler: async (_ctx, args) => {
-    try {
-      assertRoomPin(args.roomPin);
-      return true;
-    } catch {
-      return false;
-    }
   },
 });
 
@@ -90,6 +78,29 @@ export const me = query({
     ]);
     if (!event || !player || player.eventId !== event._id) return null;
     const team = await ctx.db.get(player.teamId);
+    let currentRoom = null;
+    if (event.phase === "rotation-one" || event.phase === "rotation-two") {
+      const memberships = await ctx.db
+        .query("roomMembers")
+        .withIndex("by_player", (q) => q.eq("playerId", player._id))
+        .collect();
+      const membership = memberships
+        .filter((candidate) => candidate.joinedAt >= event.phaseStartedAt)
+        .sort((a, b) => b.joinedAt - a.joinedAt)[0];
+      if (membership) {
+        const room = await ctx.db.get(membership.roomId);
+        if (room?.eventId === event._id) {
+          currentRoom = {
+            roomId: room._id,
+            name: room.name,
+            game: room.game,
+            status: room.status,
+            rotationGroups: room.rotationGroups,
+            externalUrl: room.externalUrl,
+          };
+        }
+      }
+    }
     return {
       playerId: player._id,
       eventId: player.eventId,
@@ -99,6 +110,7 @@ export const me = query({
       teamSlug: team?.slug ?? null,
       role: player.role,
       rotationGroup: player.rotationGroup,
+      currentRoom,
     };
   },
 });
@@ -123,7 +135,18 @@ export const publicState = query({
     return {
       event,
       teams,
-      rooms,
+      rooms: rooms.map((room) => ({
+        _id: room._id,
+        _creationTime: room._creationTime,
+        eventId: room.eventId,
+        name: room.name,
+        game: room.game,
+        code: "",
+        hostName: room.hostName,
+        status: room.status,
+        rotationGroups: room.rotationGroups,
+        externalUrl: undefined,
+      })),
       questions: questions.map((question) => ({
         _id: question._id,
         _creationTime: question._creationTime,

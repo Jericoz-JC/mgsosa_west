@@ -28,3 +28,4 @@ Thumbs.db
 # Codex working files and generated review artifacts
 .codex-tmp/
 outputs/
+.vercel/

@@ -160,6 +160,13 @@ export function gameReducer(state: EventState, action: GameAction): EventState {
       return state.scoreLedger.length
         ? { ...state, scoreLedger: state.scoreLedger.slice(0, -1) }
         : state;
+    case "set-room-code":
+      return {
+        ...state,
+        breakoutRooms: state.breakoutRooms.map((room) =>
+          room.id === action.roomId ? { ...room, code: action.code } : room,
+        ),
+      };
     case "set-phase":
       return {
         ...state,

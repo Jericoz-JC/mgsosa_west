@@ -1,7 +1,13 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { EventState, GameAction, TeamId } from "@/lib/game/types";
+import type {
+  EventState,
+  GameAction,
+  ParticipantRoom,
+  RoomHostView,
+  TeamId,
+} from "@/lib/game/types";
 
 export interface GameIdentity {
   playerId: string;
@@ -27,16 +33,22 @@ export interface GameContextValue {
    * flight, null when this device has not joined the event. Always null in demo mode.
    */
   identity: GameIdentity | null | undefined;
+  /** The participant's current room for this rotation. */
+  currentRoom: ParticipantRoom | null | undefined;
   join: (input: JoinRequest) => Promise<void>;
+  joinRoom: (code: string) => Promise<void>;
   /** Host PIN entered on this device. Demo mode is always authorized. */
   hostPin: string | null;
-  /** Limited credential for breakout-room controls; never grants Game Master access. */
-  roomPin: string | null;
   submitHostPin: (pin: string) => Promise<boolean>;
-  submitRoomPin: (pin: string) => Promise<boolean>;
   clearHostPin: () => void;
-  clearRoomPin: () => void;
+  /** One-room volunteer access loaded from a private URL fragment. */
+  roomHostView: RoomHostView | null | undefined;
+  activateRoomHost: (token: string) => void;
+  clearRoomHost: () => void;
+  issueRoomHostLink: (roomId: string) => Promise<string>;
+  revokeRoomHostLink: (roomId: string) => Promise<void>;
   setRoomCode: (roomId: string, code: string) => Promise<void>;
+  awardRoomResult: (roomId: string, teamId: TeamId, reason: string, idempotencyKey: string) => Promise<void>;
 }
 
 export const GameContext = createContext<GameContextValue | null>(null);

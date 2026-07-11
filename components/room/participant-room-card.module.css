@@ -1,0 +1,441 @@
+.stage {
+  display: grid;
+  place-items: center;
+  min-height: 515px;
+  padding: clamp(24px, 5vw, 52px);
+  background: var(--navy-900);
+}
+
+.ticket {
+  position: relative;
+  width: min(100%, 720px);
+  padding: clamp(24px, 5vw, 42px);
+  border: 2px solid var(--navy-950);
+  border-radius: 18px;
+  color: var(--ink);
+  background: var(--warm);
+  box-shadow: 8px 8px 0 var(--gold);
+  transform: rotate(-0.35deg);
+  animation: ticket-in 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.ticket::before,
+.ticket::after {
+  content: "";
+  position: absolute;
+  top: 84px;
+  width: 24px;
+  height: 42px;
+  border: 2px solid var(--navy-950);
+  background: var(--navy-900);
+}
+
+.ticket::before {
+  left: -3px;
+  border-left: 0;
+  border-radius: 0 22px 22px 0;
+}
+
+.ticket::after {
+  right: -3px;
+  border-right: 0;
+  border-radius: 22px 0 0 22px;
+}
+
+.ticketHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22px;
+  margin: -4px 0 30px;
+  padding: 0 4px 22px;
+  border-bottom: 2px dashed rgba(16, 43, 69, 0.24);
+}
+
+.ticketHeader p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.kicker {
+  color: var(--blue-600);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.ticketMark {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 44px;
+  border: 2px solid var(--navy-900);
+  border-radius: 6px;
+  color: var(--navy-900);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  transform: rotate(4deg);
+}
+
+.codeForm {
+  display: grid;
+  gap: 24px;
+}
+
+.formCopy {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.formCopy h2,
+.roomIdentity h2,
+.loadingTicket h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  letter-spacing: -0.025em;
+  line-height: 0.88;
+  text-transform: uppercase;
+}
+
+.formCopy p,
+.loadingTicket p {
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 0.83rem;
+  line-height: 1.6;
+}
+
+.iconTile,
+.gameIcon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border: 2px solid var(--navy-900);
+  border-radius: 13px 5px 13px 5px;
+  color: var(--navy-900);
+  background: var(--sky-100);
+  transform: rotate(-3deg);
+}
+
+.codeField {
+  display: grid;
+  gap: 8px;
+}
+
+.codeField label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.codeField > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.codeInputWrap {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  min-height: 82px;
+  padding: 0 18px;
+  border: 2px solid var(--navy-900);
+  border-radius: 9px;
+  background: #fffdf8;
+  box-shadow: 4px 4px 0 var(--sky-300);
+}
+
+.codeInputWrap > svg {
+  color: var(--blue-500);
+}
+
+.codeInputWrap input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--navy-950);
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 10vw, 4.7rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1;
+}
+
+.codeInputWrap input::placeholder {
+  color: #aeb8bd;
+}
+
+.codeInputWrap:focus-within {
+  border-color: var(--gold);
+  box-shadow: 4px 4px 0 var(--navy-900);
+}
+
+.error {
+  margin: -8px 0 0;
+  padding: 11px 13px;
+  border-left: 4px solid var(--coral);
+  color: #6d312c;
+  background: #f2dfda;
+  font-size: 0.78rem;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.formActions,
+.confirmationActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.formActions > :first-child {
+  min-width: 190px;
+}
+
+.cancelButton,
+.switchButton {
+  min-height: 44px;
+  border: 0;
+  color: var(--blue-600);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 850;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.roomConfirmation {
+  display: grid;
+  gap: 25px;
+}
+
+.admitStamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 2px solid var(--green);
+  border-radius: 5px;
+  color: var(--green);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+}
+
+.roomIdentity {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 17px;
+}
+
+.roomIdentity > div > p {
+  margin: 0 0 7px;
+  color: var(--blue-600);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.roomIdentity small {
+  display: block;
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.instructions {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.instructions li {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  align-items: start;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.instructions li > span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px 2px 7px 2px;
+  color: var(--navy-950);
+  background: var(--gold);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.instructions p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.55;
+}
+
+.instructions strong {
+  color: var(--ink);
+}
+
+.zoomCue {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--green);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.hostNote {
+  margin: 22px 0 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.66rem;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+
+.loadingTicket {
+  min-height: 280px;
+}
+
+.loadingTicket h2 {
+  margin-top: 22px;
+}
+
+.loadingLine {
+  display: block;
+  width: 46%;
+  height: 8px;
+  margin-top: 36px;
+  background: var(--gold);
+  animation: loading-pulse 950ms ease-in-out infinite alternate;
+}
+
+@keyframes ticket-in {
+  from { opacity: 0; transform: translateY(18px) rotate(-1.4deg); }
+  to { opacity: 1; transform: translateY(0) rotate(-0.35deg); }
+}
+
+@keyframes loading-pulse {
+  from { width: 24%; opacity: 0.45; }
+  to { width: 76%; opacity: 1; }
+}
+
+@media (max-width: 620px) {
+  .stage {
+    min-height: calc(100svh - 355px);
+    padding: 22px 16px 28px;
+  }
+
+  .ticket {
+    padding: 22px 18px;
+    border-radius: 14px;
+    box-shadow: 5px 5px 0 var(--gold);
+    transform: none;
+  }
+
+  .ticket::before,
+  .ticket::after {
+    top: 72px;
+    width: 18px;
+    height: 34px;
+  }
+
+  .ticketHeader {
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+  }
+
+  .ticketHeader p,
+  .ticketMark {
+    display: none;
+  }
+
+  .formCopy,
+  .roomIdentity {
+    align-items: start;
+  }
+
+  .iconTile,
+  .gameIcon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .formCopy h2,
+  .roomIdentity h2 {
+    font-size: clamp(2.35rem, 12vw, 3.4rem);
+  }
+
+  .codeInputWrap {
+    min-height: 72px;
+    padding-inline: 13px;
+  }
+
+  .codeInputWrap input {
+    letter-spacing: 0.11em;
+  }
+
+  .formActions,
+  .confirmationActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .formActions > :first-child,
+  .confirmationActions > a {
+    width: 100%;
+  }
+
+  .cancelButton,
+  .switchButton {
+    width: 100%;
+  }
+
+  .zoomCue {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticket,
+  .loadingLine {
+    animation: none;
+  }
+}

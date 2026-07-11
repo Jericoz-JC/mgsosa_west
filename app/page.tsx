@@ -11,7 +11,7 @@ export default function Home() {
       <header className={`container topbar ${styles.topbar}`}>
         <BrandLockup />
         <div className={styles.staffLinks}>
-          <Link href="/room">Room admin</Link>
+          <Link href="/room">Room host</Link>
           <Link className="button button-dark" href="/host">Game Master</Link>
         </div>
       </header>
@@ -42,7 +42,7 @@ export default function Home() {
 
       <section className={`container ${styles.roleNote}`}>
         <ShieldCheck aria-hidden />
-        <p><strong>Different screen, right controls.</strong> Participants buzz and follow rotations. Room admins run one activity. The Game Master sees the whole event.</p>
+        <p><strong>Different screen, right controls.</strong> Participants buzz and follow rotations. Room hosts run one activity. The Game Master sees the whole event.</p>
         <Link href="/display">Open display view →</Link>
       </section>
     </main>
