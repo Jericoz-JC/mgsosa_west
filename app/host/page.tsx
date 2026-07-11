@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Clock3, Copy, Gamepad2, Radio, UsersRound } from "lucide-react";
+import { ArrowRight, CheckCircle2, Church, Clock3, Copy, Gamepad2, Radio, UsersRound } from "lucide-react";
 import { useGame } from "@/components/game/game-provider";
 import { ScoreStrip } from "@/components/game/score-strip";
 import type { EventPhase } from "@/lib/game/types";
@@ -83,6 +83,24 @@ export default function HostOverview() {
             ))}
           </div>
           <Link className="button button-ghost" href="/host/room">Manage rooms and hosts <ArrowRight size={17} /></Link>
+        </section>
+
+        <section className={`card ${styles.attendance}`}>
+          <div className={styles.cardHeading}>
+            <div><p className="eyebrow">Check-in</p><h2>{state.players.length} participants</h2></div>
+            <Church aria-hidden />
+          </div>
+          {state.players.length ? (
+            <div className={styles.attendanceList}>
+              {state.players.map((player) => (
+                <article key={player.id}>
+                  <span className={player.connected ? styles.onlineDot : styles.awayDot} aria-label={player.connected ? "Recently active" : "Not recently active"} />
+                  <div><strong>{player.name}</strong><small>{player.church}</small></div>
+                  <b>{state.teams.find((team) => team.id === player.teamId)?.shortName ?? player.teamId}</b>
+                </article>
+              ))}
+            </div>
+          ) : <p className={styles.emptyAttendance}>No participants have joined yet.</p>}
         </section>
       </div>
     </div>

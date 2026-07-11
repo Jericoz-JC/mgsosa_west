@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { matchesEventCode, safeJoin } from "./join";
+import { WEST_REGION_CHURCHES } from "./churches";
 import { getRoleHome } from "./routes";
 
 describe("join and role routing", () => {
@@ -14,6 +15,15 @@ describe("join and role routing", () => {
 
   it("rejects incomplete participant details", () => {
     expect(safeJoin({ eventCode: "", name: "", church: "" }).success).toBe(false);
+  });
+
+  it("accepts every West region church and a typed visiting church", () => {
+    for (const church of WEST_REGION_CHURCHES) {
+      expect(safeJoin({ eventCode: "WEST26", name: "Guest", church }).success).toBe(true);
+    }
+    const visiting = safeJoin({ eventCode: "WEST26", name: "Guest", church: "  St. Thomas Church, Portland  " });
+    expect(visiting.success).toBe(true);
+    if (visiting.success) expect(visiting.data.church).toBe("St. Thomas Church, Portland");
   });
 
   it("matches only the event hosted by this deployment", () => {

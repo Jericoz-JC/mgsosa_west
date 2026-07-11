@@ -9,6 +9,11 @@ import { GameProvider } from "@/components/game/game-provider";
 export const metadata: Metadata = {
   title: "MGSOSA West Game Console",
   description: "The live game-night console for MGSOSA West.",
+  icons: {
+    icon: [{ url: "/brand/mgsosa-mark-transparent.png", type: "image/png" }],
+    shortcut: "/brand/mgsosa-mark-transparent.png",
+    apple: "/brand/mgsosa-mark-navy.png",
+  },
 };
 
 export const viewport: Viewport = {

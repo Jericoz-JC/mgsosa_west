@@ -215,6 +215,22 @@
   margin-top: 3px;
 }
 
+.joinStage :global(.other-church-field) {
+  position: relative;
+  margin-top: -4px;
+  padding: 14px;
+  border-left: 4px solid var(--gold);
+  border-radius: 4px 10px 10px 4px;
+  background: #f0eadc;
+  animation: reveal 220ms ease both;
+}
+
+.joinStage :global(.other-church-field small) {
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
 .joinStage :global(.form-error) {
   margin: -2px 0;
   color: #b43730;

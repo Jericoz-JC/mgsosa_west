@@ -19,6 +19,10 @@ export const join = mutation({
   },
   handler: async (ctx, args) => {
     if (args.sessionToken.length < 24) throw new ConvexError("Invalid participant session.");
+    const name = args.name.trim().replace(/\s+/g, " ");
+    const church = args.church.trim().replace(/\s+/g, " ");
+    if (name.length < 2 || name.length > 32) throw new ConvexError("Enter a valid first name or nickname.");
+    if (church.length < 2 || church.length > 64) throw new ConvexError("Choose or enter a valid church.");
     const event = await ctx.db
       .query("events")
       .withIndex("by_code", (q) => q.eq("code", normalizeCode(args.eventCode)))
@@ -34,8 +38,8 @@ export const join = mutation({
         throw new ConvexError("This participant session belongs to another event.");
       }
       await ctx.db.patch(existing._id, {
-        name: args.name.trim().slice(0, 32),
-        church: args.church.trim().slice(0, 64),
+        name,
+        church,
         lastSeenAt: Date.now(),
       });
       return existing._id;
@@ -52,8 +56,8 @@ export const join = mutation({
     return await ctx.db.insert("players", {
       eventId: event._id,
       sessionToken: args.sessionToken,
-      name: args.name.trim().slice(0, 32),
-      church: args.church.trim().slice(0, 64),
+      name,
+      church,
       teamId: team._id,
       role: "participant",
       rotationGroup,

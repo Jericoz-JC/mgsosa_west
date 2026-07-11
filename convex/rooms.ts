@@ -99,8 +99,20 @@ export const hostState = query({
       .query("breakoutRooms")
       .withIndex("by_event", (q) => q.eq("eventId", event._id))
       .collect();
+    const players = await ctx.db
+      .query("players")
+      .withIndex("by_event", (q) => q.eq("eventId", event._id))
+      .collect();
     const now = Date.now();
     return {
+      players: players.filter((player) => player.role === "participant").map((player) => ({
+        playerId: player._id,
+        name: player.name,
+        church: player.church,
+        teamId: player.teamId,
+        rotationGroup: player.rotationGroup,
+        lastSeenAt: player.lastSeenAt,
+      })),
       rooms: await Promise.all(
         rooms.map(async (room) => {
           const grants = await ctx.db
