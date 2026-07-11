@@ -31,9 +31,9 @@ The current release uses a backend-first deployment: deploy and verify Convex fu
 
 ## Live website and access
 
-- Event website: [mgsosa-west.vercel.app](https://mgsosa-west.vercel.app)
-- Game Master console: [mgsosa-west.vercel.app/host](https://mgsosa-west.vercel.app/host)
-- Shared display: [mgsosa-west.vercel.app/display](https://mgsosa-west.vercel.app/display)
+- Event website: [mgsosawest.com](https://mgsosawest.com)
+- Game Master console: [mgsosawest.com/host](https://mgsosawest.com/host)
+- Shared display: [mgsosawest.com/display](https://mgsosawest.com/display)
 - Event code for participants: `WEST26`
 
 The production Game Master PIN is stored in Convex and is intentionally not committed to this public repository. An authorized organizer can retrieve it with:
@@ -48,9 +48,9 @@ To rotate the PIN, run `pnpm exec convex env set HOST_PIN --prod`, enter the new
 
 ### Before the event
 
-1. Join Zoom 30 minutes early and open the [Game Master console](https://mgsosa-west.vercel.app/host).
+1. Join Zoom 30 minutes early and open the [Game Master console](https://mgsosawest.com/host).
 2. Enter the Game Master PIN once. Keep this tab private; do not screen share it because it contains answers and volunteer controls.
-3. Open the [shared display](https://mgsosa-west.vercel.app/display) in a separate tab. This is the only website tab that should be screen shared.
+3. Open the [shared display](https://mgsosawest.com/display) in a separate tab. This is the only website tab that should be screen shared.
 4. Open **Breakout rooms** from the Game Master navigation.
 5. Select each room, press **Generate new code**, and confirm a 4–6 digit participant code appears.
 6. Press **Create + copy link** for each room and privately send that link only to its assigned Room Host. Replacing a link invalidates the previous link.
@@ -107,7 +107,7 @@ The floater follows the instructions for whichever activity they are assigned. T
 
 ## Participant instructions to announce
 
-1. Go to [mgsosa-west.vercel.app](https://mgsosa-west.vercel.app), enter `WEST26`, a first name, and church, then press **Enter the lobby**.
+1. Go to [mgsosawest.com](https://mgsosawest.com), enter `WEST26`, a first name, and church, then press **Enter the lobby**.
 2. Keep the page open. It updates automatically when the Game Master changes phases.
 3. During a breakout rotation, enter the 4–6 digit code shared by that Room Host in Zoom.
 4. During Jeopardy, use the website buzzer only after the Game Master says the buzzers are open.
