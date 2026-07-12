@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ArrowRight, CheckCircle2, Church, Clock3, Copy, Gamepad2, Radio, Trash2, UsersRound } from "lucide-react";
 import { useGame } from "@/components/game/game-provider";
 import { ScoreStrip } from "@/components/game/score-strip";
+import { TeamAssignmentConsole } from "@/components/host/team-assignment-console";
 import type { EventPhase } from "@/lib/game/types";
 import { timestamp } from "@/lib/game/time";
 import styles from "./host.module.css";
@@ -63,6 +64,8 @@ export default function HostOverview() {
 
       <ScoreStrip state={state} />
 
+      <TeamAssignmentConsole />
+
       <div className={styles.dashboardGrid}>
         <section className={`card ${styles.timeline}`}>
           <div className={styles.cardHeading}>
@@ -110,7 +113,7 @@ export default function HostOverview() {
                 <article key={player.id}>
                   <span className={player.connected ? styles.onlineDot : styles.awayDot} aria-label={player.connected ? "Recently active" : "Not recently active"} />
                   <div><strong>{player.name}</strong><small>{player.church}</small></div>
-                  <b>{state.teams.find((team) => team.id === player.teamId)?.shortName ?? player.teamId}</b>
+                  <b>{state.teams.find((team) => team.id === player.teamId)?.shortName ?? "Unassigned"}</b>
                 </article>
               ))}
             </div>

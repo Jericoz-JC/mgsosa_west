@@ -23,6 +23,7 @@ export function getCurrentQuestion(state: EventState) {
 export function claimBuzz(state: EventState, playerId: string, at: number): BuzzClaimResult {
   const player = state.players.find((candidate) => candidate.id === playerId);
   if (!player) return { accepted: false, reason: "unknown-player", state };
+  if (!player.teamId) return { accepted: false, reason: "unknown-player", state };
   if (!state.buzzWindow || state.buzzWindow.status === "locked") {
     return { accepted: false, reason: "closed", state };
   }
@@ -97,7 +98,7 @@ export function gameReducer(state: EventState, action: GameAction): EventState {
     case "mark-correct": {
       const question = getCurrentQuestion(state);
       const winner = state.players.find((player) => player.id === state.buzzWindow?.winnerPlayerId);
-      if (!question || !winner || state.buzzWindow?.status !== "claimed") return state;
+      if (!question || !winner?.teamId || state.buzzWindow?.status !== "claimed") return state;
       const scored = appendScore(state, {
         id: id("score", action.at),
         teamId: winner.teamId,
@@ -117,7 +118,7 @@ export function gameReducer(state: EventState, action: GameAction): EventState {
     case "mark-incorrect": {
       const question = getCurrentQuestion(state);
       const winner = state.players.find((player) => player.id === state.buzzWindow?.winnerPlayerId);
-      if (!question || !winner || state.buzzWindow?.status !== "claimed") return state;
+      if (!question || !winner?.teamId || state.buzzWindow?.status !== "claimed") return state;
       const next = state.settings.subtractIncorrect
         ? appendScore(state, {
             id: id("score", action.at),

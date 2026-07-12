@@ -66,6 +66,8 @@ export const event = mutation({
         shortName: team.shortName,
         color: team.color,
         accent: team.accent,
+        active: true,
+        position: teams.indexOf(team),
       });
     }
     await ctx.db.insert("breakoutRooms", {

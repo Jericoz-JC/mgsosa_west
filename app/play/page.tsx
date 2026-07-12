@@ -69,10 +69,10 @@ export default function PlayerPage() {
       }
     : stored;
 
-  const team = state.teams.find((candidate) => candidate.id === player.teamId) ?? state.teams[0];
+  const team = state.teams.find((candidate) => candidate.id === player.teamId);
   const winner = state.players.find((candidate) => candidate.id === state.buzzWindow?.winnerPlayerId);
   const isMyBuzz = winner?.id === player.playerId;
-  const myTeamLocked = state.buzzWindow?.lockedTeamIds.includes(player.teamId) ?? false;
+  const myTeamLocked = player.teamId ? state.buzzWindow?.lockedTeamIds.includes(player.teamId) ?? false : false;
   const rotationPhase = state.phase === "rotation-one" || state.phase === "rotation-two" ? state.phase : null;
   const waiting = standbyCopy(state.phase);
   const next = nextCopy[state.phase];
@@ -116,7 +116,7 @@ export default function PlayerPage() {
   }
 
   return (
-    <main className={`page-shell ${styles.playerPage}`} style={{ "--team-color": team.color, "--team-accent": team.accent } as React.CSSProperties}>
+    <main className={`page-shell ${styles.playerPage}`} style={{ "--team-color": team?.color ?? "#24324a", "--team-accent": team?.accent ?? "#d9e0ea" } as React.CSSProperties}>
       <header className={`container topbar ${styles.header}`}>
         <BrandLockup />
         <div className={styles.connection}><Wifi size={16} aria-hidden /> Connected</div>
@@ -131,8 +131,8 @@ export default function PlayerPage() {
           </div>
           <div className={styles.teamCard}>
             <span>Your team</span>
-            <strong>{team.name}</strong>
-            <b>{getTeamScore(state, team.id)} pts</b>
+            <strong>{team?.name ?? "Waiting for assignment"}</strong>
+            <b>{team ? `${getTeamScore(state, team.id)} pts` : "The Game Master will announce teams"}</b>
           </div>
         </section>
 
@@ -152,7 +152,7 @@ export default function PlayerPage() {
               onJoin={joinRoom}
               phase={rotationPhase}
             />
-          ) : state.phase === "jeopardy" ? (
+          ) : state.phase === "jeopardy" && team ? (
             <div className={`${styles.buzzerStage} ${styles[`state-${buzzState}`]}`} aria-live="polite">
               {buzzState === "open" ? (
                 <button className={styles.buzzButton} onClick={buzz} type="button">

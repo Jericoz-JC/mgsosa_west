@@ -21,6 +21,7 @@ import type {
   RoomHostView,
   TeamId,
   JeopardyQuestion,
+  JeopardyCardInput,
 } from "@/lib/game/types";
 import { GameContext, type GameContextValue, type JoinRequest } from "./game-context";
 
@@ -55,7 +56,7 @@ function toEventState(
     slugByTeamId.set(team._id, team.slug as TeamId);
     teamIdBySlug.set(team.slug as TeamId, team._id);
   }
-  const slugOf = (teamId: string) => slugByTeamId.get(teamId) ?? "pacific";
+  const slugOf = (teamId: string | undefined) => teamId ? (slugByTeamId.get(teamId) ?? null) : null;
   const protectedRoomById = new Map(hostRoomState?.rooms.map((room) => [room._id, room]) ?? []);
 
   const state: EventState = {
@@ -86,7 +87,7 @@ function toEventState(
             id: data.winner._id,
             name: data.winner.name,
             church: "",
-            teamId: slugOf(data.winner.teamId),
+            teamId: slugOf(data.winner.teamId) ?? data.teams[0]?.slug ?? "pacific",
             role: "participant",
             connected: true,
           },
@@ -130,12 +131,12 @@ function toEventState(
           openedAt: data.buzzWindow.openedAt,
           claimedAt: data.buzzWindow.claimedAt,
           winnerPlayerId: data.buzzWindow.winnerPlayerId,
-          lockedTeamIds: data.buzzWindow.lockedTeamIds.map(slugOf),
+          lockedTeamIds: data.buzzWindow.lockedTeamIds.map(slugOf).filter((teamId): teamId is TeamId => Boolean(teamId)),
         }
       : undefined,
     scoreLedger: data.scoreEvents.map((event) => ({
       id: event._id,
-      teamId: slugOf(event.teamId),
+      teamId: slugOf(event.teamId) ?? data.teams[0]?.slug ?? "pacific",
       delta: event.delta,
       reason: event.reason,
       idempotencyKey: event.idempotencyKey,
@@ -223,6 +224,10 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
     api.rooms.roomHostState,
     roomHostToken ? { token: roomHostToken } : "skip",
   );
+  const jeopardySetsData = useQuery(
+    api.jeopardy.listSets,
+    hostPin && eventId && isHostRoute ? { eventId, hostPin } : "skip",
+  );
 
   const joinEvent = useMutation(api.events.join);
   const joinBreakoutRoom = useMutation(api.rooms.joinRoom);
@@ -243,6 +248,10 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
   const createRoomMutation = useMutation(api.rooms.createRoom);
   const setRoomCapacityMutation = useMutation(api.rooms.setRoomCapacity);
   const setJeopardyRound = useMutation(api.jeopardy.setRound);
+  const assignBalancedTeamsMutation = useMutation(api.teams.assignBalanced);
+  const createJeopardySetMutation = useMutation(api.jeopardy.createSet);
+  const activateJeopardySetMutation = useMutation(api.jeopardy.activateSet);
+  const resolveManualMutation = useMutation(api.jeopardy.resolveManual);
 
   const answers = useMemo(() => {
     const map = new Map<string, string>();
@@ -429,6 +438,27 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
     await setRoomCapacityMutation({ roomId: roomId as Id<"breakoutRooms">, capacity, hostPin });
   }, [hostPin, setRoomCapacityMutation]);
 
+  const assignBalancedTeams = useCallback(async (minimumGroups: number, targetSize: number) => {
+    if (!eventId || !hostPin) throw new Error("Game Master access is required.");
+    return await assignBalancedTeamsMutation({ eventId, hostPin, minimumGroups, targetSize });
+  }, [assignBalancedTeamsMutation, eventId, hostPin]);
+
+  const createJeopardySet = useCallback(async (title: string, cards: JeopardyCardInput[]) => {
+    if (!eventId || !hostPin) throw new Error("Game Master access is required.");
+    await createJeopardySetMutation({ eventId, hostPin, title, cards });
+  }, [createJeopardySetMutation, eventId, hostPin]);
+
+  const activateJeopardySet = useCallback(async (setId: string | null) => {
+    if (!eventId || !hostPin) throw new Error("Game Master access is required.");
+    await activateJeopardySetMutation({ eventId, hostPin, setId: setId as Id<"jeopardySets"> | null });
+  }, [activateJeopardySetMutation, eventId, hostPin]);
+
+  const resolveJeopardyManually = useCallback(async (teamId: TeamId | null, multiplier: -1 | 0 | 1) => {
+    if (!eventId || !hostPin || !mapped) throw new Error("Game Master access is required.");
+    const teamDocumentId = teamId ? mapped.teamIdBySlug.get(teamId) ?? null : null;
+    await resolveManualMutation({ eventId, hostPin, teamId: teamDocumentId, multiplier });
+  }, [eventId, hostPin, mapped, resolveManualMutation]);
+
   // undefined = lookup in flight, null = this device has not joined the event.
   const identity = useMemo(
     () =>
@@ -480,7 +510,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
         id: player.playerId,
         name: player.name,
         church: player.church,
-        teamId: mapped.teamSlugById.get(player.teamId) ?? "pacific",
+        teamId: player.teamId ? mapped.teamSlugById.get(player.teamId) ?? null : null,
       })),
       expiresAt: roomHostData.grantExpiresAt,
     };
@@ -511,6 +541,11 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
             clearParticipants,
             createRoom,
             setRoomCapacity,
+            assignBalancedTeams,
+            jeopardySets: (jeopardySetsData ?? []).map((set) => ({ id: set.id, title: set.title, questionCount: set.questionCount, active: set.active })),
+            createJeopardySet,
+            activateJeopardySet,
+            resolveJeopardyManually,
           }
         : null,
     [
@@ -534,6 +569,11 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
       clearParticipants,
       createRoom,
       setRoomCapacity,
+      assignBalancedTeams,
+      jeopardySetsData,
+      createJeopardySet,
+      activateJeopardySet,
+      resolveJeopardyManually,
     ],
   );
 

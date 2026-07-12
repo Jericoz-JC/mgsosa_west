@@ -7,6 +7,9 @@ import type {
   ParticipantRoom,
   RoomHostView,
   TeamId,
+  TeamAssignmentPlan,
+  JeopardyCardInput,
+  JeopardySetSummary,
 } from "@/lib/game/types";
 
 export interface GameIdentity {
@@ -52,6 +55,11 @@ export interface GameContextValue {
   clearParticipants: (confirmation: string, expectedCount: number) => Promise<number>;
   createRoom: (input: { name: string; game: "imposter" | "gartic"; capacity: number; rotationGroups: string[] }) => Promise<void>;
   setRoomCapacity: (roomId: string, capacity: number) => Promise<void>;
+  assignBalancedTeams: (minimumGroups: number, targetSize: number) => Promise<TeamAssignmentPlan>;
+  jeopardySets: JeopardySetSummary[];
+  createJeopardySet: (title: string, cards: JeopardyCardInput[]) => Promise<void>;
+  activateJeopardySet: (setId: string | null) => Promise<void>;
+  resolveJeopardyManually: (teamId: TeamId | null, multiplier: -1 | 0 | 1) => Promise<void>;
 }
 
 export const GameContext = createContext<GameContextValue | null>(null);

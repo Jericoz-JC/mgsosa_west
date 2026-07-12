@@ -19,6 +19,8 @@ export default defineSchema({
     shortName: v.string(),
     color: v.string(),
     accent: v.string(),
+    active: v.optional(v.boolean()),
+    position: v.optional(v.number()),
   }).index("by_event", ["eventId"]),
 
   players: defineTable({
@@ -26,7 +28,9 @@ export default defineSchema({
     sessionToken: v.string(),
     name: v.string(),
     church: v.string(),
-    teamId: v.id("teams"),
+    // Participants check in before teams are finalized. The Game Master assigns
+    // everyone in one inexpensive batch once attendance is stable.
+    teamId: v.optional(v.id("teams")),
     role: v.union(v.literal("participant"), v.literal("room-admin"), v.literal("game-master")),
     rotationGroup: v.string(),
     lastSeenAt: v.number(),
@@ -71,6 +75,7 @@ export default defineSchema({
 
   questions: defineTable({
     eventId: v.id("events"),
+    setId: v.optional(v.id("jeopardySets")),
     sourceId: v.string(),
     category: v.string(),
     value: v.number(),
@@ -81,10 +86,19 @@ export default defineSchema({
     used: v.boolean(),
   })
     .index("by_event", ["eventId"])
+    .index("by_set", ["setId"])
+    .index("by_event_set", ["eventId", "setId"])
     .index("by_event_category", ["eventId", "category"]),
+
+  jeopardySets: defineTable({
+    eventId: v.id("events"),
+    title: v.string(),
+    createdAt: v.number(),
+  }).index("by_event", ["eventId"]),
 
   jeopardyGames: defineTable({
     eventId: v.id("events"),
+    activeSetId: v.optional(v.id("jeopardySets")),
     currentQuestionId: v.optional(v.id("questions")),
     currentBuzzWindowId: v.optional(v.id("buzzWindows")),
     activeRound: v.optional(v.number()),

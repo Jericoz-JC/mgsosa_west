@@ -234,3 +234,22 @@
 .roundPicker button:disabled { opacity: .5; cursor: not-allowed; }
 .roundPicker p { margin: 0; font-size: .82rem; line-height: 1.35; }
 @media (max-width: 760px) { .roundPicker { grid-template-columns: 1fr 1fr; } .roundPicker div, .roundPicker p { grid-column: 1 / -1; } }
+.manualLedger { display: grid; grid-template-columns: minmax(220px, .9fr) auto minmax(420px, 1.5fr); gap: 16px; align-items: center; padding: 17px 19px; border: 2px solid var(--ink); background: #fff8df; box-shadow: 4px 4px 0 var(--ink); }
+.manualLedger h2 { margin: 2px 0; font-family: var(--font-display); font-size: 1.8rem; text-transform: uppercase; }
+.manualLedger p { margin: 0; color: var(--muted); font-size: .74rem; }
+.manualLedger label { display: grid; gap: 4px; color: var(--muted); font-size: .65rem; font-weight: 900; text-transform: uppercase; }
+.manualLedger input { width: 90px; min-height: 42px; padding: 0 10px; border: 2px solid var(--ink); font: 900 1rem var(--font-body); }
+.manualTeams { display: grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap: 7px; }
+.manualTeams article { display: grid; grid-template-columns: 1fr auto auto; align-items: center; overflow: hidden; border: 1px solid var(--ink); border-left: 5px solid var(--team-color); background: #fff; }
+.manualTeams strong { overflow: hidden; padding: 0 7px; font-size: .72rem; text-overflow: ellipsis; }
+.manualTeams button { display: inline-flex; align-items: center; min-height: 34px; border: 0; border-left: 1px solid var(--line); background: #fff; font-size: .66rem; font-weight: 900; cursor: pointer; }
+.manualResolve { display: grid; gap: 10px; padding: 16px 22px 22px; border-top: 1px solid rgba(255,255,255,.12); background: #101c31; }
+.manualResolve > span { color: var(--gold); font-size: .64rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+.manualResolve > div { display: grid; gap: 6px; }
+.manualResolve article { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 5px; }
+.manualResolve article strong { font-size: .76rem; }
+.manualResolve button { min-height: 34px; border: 1px solid rgba(255,255,255,.18); border-radius: 7px; color: #fff; background: rgba(255,255,255,.08); font-weight: 850; cursor: pointer; }
+.manualResolve article button:first-of-type { color: #10231d; background: #9fe0bd; }
+.manualResolve article button:last-of-type { color: #481b19; background: #f3aaa4; }
+@media (max-width: 1000px) { .manualLedger { grid-template-columns: 1fr auto; } .manualTeams { grid-column: 1 / -1; } }
+@media (max-width: 600px) { .manualLedger { grid-template-columns: 1fr; } .manualTeams { grid-column: auto; } }
