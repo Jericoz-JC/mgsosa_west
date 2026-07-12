@@ -45,12 +45,7 @@ export const join = mutation({
       return existing._id;
     }
 
-    const teams = await ctx.db.query("teams").withIndex("by_event", (q) => q.eq("eventId", event._id)).collect();
-    if (!teams.length) throw new ConvexError("Teams are not ready yet.");
     const players = await ctx.db.query("players").withIndex("by_event", (q) => q.eq("eventId", event._id)).collect();
-    const counts = new Map(teams.map((team) => [team._id, 0]));
-    for (const player of players) counts.set(player.teamId, (counts.get(player.teamId) ?? 0) + 1);
-    const team = [...teams].sort((a, b) => (counts.get(a._id) ?? 0) - (counts.get(b._id) ?? 0))[0];
     const rotationGroup = ["A", "B", "C", "D"][players.length % 4];
 
     return await ctx.db.insert("players", {
@@ -58,7 +53,6 @@ export const join = mutation({
       sessionToken: args.sessionToken,
       name,
       church,
-      teamId: team._id,
       role: "participant",
       rotationGroup,
       lastSeenAt: Date.now(),
@@ -81,7 +75,7 @@ export const me = query({
         .unique(),
     ]);
     if (!event || !player || player.eventId !== event._id) return null;
-    const team = await ctx.db.get(player.teamId);
+    const team = player.teamId ? await ctx.db.get(player.teamId) : null;
     let currentRoom = null;
     if (event.phase === "rotation-one" || event.phase === "rotation-two") {
       const memberships = await ctx.db
@@ -128,13 +122,16 @@ export const publicState = query({
       .withIndex("by_code", (q) => q.eq("code", normalizeCode(args.eventCode)))
       .unique();
     if (!event) return null;
-    const [teams, rooms, questions, scoreEvents, game] = await Promise.all([
+    const game = await ctx.db.query("jeopardyGames").withIndex("by_event", (q) => q.eq("eventId", event._id)).unique();
+    const [allTeams, rooms, questions, scoreEvents] = await Promise.all([
       ctx.db.query("teams").withIndex("by_event", (q) => q.eq("eventId", event._id)).collect(),
       ctx.db.query("breakoutRooms").withIndex("by_event", (q) => q.eq("eventId", event._id)).collect(),
-      ctx.db.query("questions").withIndex("by_event", (q) => q.eq("eventId", event._id)).collect(),
+      ctx.db.query("questions").withIndex("by_event_set", (q) => q.eq("eventId", event._id).eq("setId", game?.activeSetId)).collect(),
       ctx.db.query("scoreEvents").withIndex("by_event", (q) => q.eq("eventId", event._id)).collect(),
-      ctx.db.query("jeopardyGames").withIndex("by_event", (q) => q.eq("eventId", event._id)).unique(),
     ]);
+    const teams = allTeams
+      .filter((team) => team.active !== false)
+      .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
     const buzzWindow = game?.currentBuzzWindowId ? await ctx.db.get(game.currentBuzzWindowId) : null;
     const winner = buzzWindow?.winnerPlayerId ? await ctx.db.get(buzzWindow.winnerPlayerId) : null;
     return {
@@ -168,7 +165,7 @@ export const publicState = query({
       scoreEvents,
       game,
       buzzWindow,
-      winner: winner ? { _id: winner._id, name: winner.name, teamId: winner.teamId } : null,
+      winner: winner?.teamId ? { _id: winner._id, name: winner.name, teamId: winner.teamId } : null,
     };
   },
 });

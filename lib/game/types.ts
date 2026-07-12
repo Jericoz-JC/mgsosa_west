@@ -9,7 +9,7 @@ export type EventPhase =
   | "jeopardy"
   | "closing";
 
-export type TeamId = "pacific" | "sierra" | "desert" | "valley";
+export type TeamId = string;
 
 export interface Team {
   id: TeamId;
@@ -23,7 +23,7 @@ export interface Player {
   id: string;
   name: string;
   church: string;
-  teamId: TeamId;
+  teamId: TeamId | null;
   role: Role;
   connected: boolean;
 }
@@ -31,7 +31,7 @@ export interface Player {
 export interface JeopardyQuestion {
   id: string;
   category: string;
-  value: 100 | 200 | 300 | 400 | 500;
+  value: number;
   clue: string;
   answer: string;
   ageBand: "Ages 9-12" | "Ages 13-17" | "Ages 18-25";
@@ -84,7 +84,7 @@ export interface RoomHostMember {
   id: string;
   name: string;
   church: string;
-  teamId: TeamId;
+  teamId: TeamId | null;
 }
 
 export interface RoomHostView {
@@ -111,6 +111,28 @@ export interface EventState {
     subtractIncorrect: boolean;
     answerSeconds: number;
   };
+}
+
+export interface TeamAssignmentPlan {
+  participantCount: number;
+  requestedGroupCount: number;
+  targetSize: number;
+  groupCount: number;
+  sizes: number[];
+}
+
+export interface JeopardySetSummary {
+  id: string | null;
+  title: string;
+  questionCount: number;
+  active: boolean;
+}
+
+export interface JeopardyCardInput {
+  category: string;
+  value: number;
+  clue: string;
+  answer: string;
 }
 
 export type GameAction =

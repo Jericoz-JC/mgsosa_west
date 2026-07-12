@@ -127,6 +127,22 @@ export function DemoGameProvider({ children }: { children: React.ReactNode }) {
       setRoomCapacity: async (roomId, capacity) => {
         dispatch({ type: "hydrate", state: { ...state, breakoutRooms: state.breakoutRooms.map((room) => room.id === roomId ? { ...room, capacity } : room) } });
       },
+      assignBalancedTeams: async (minimumGroups, targetSize) => {
+        const groupCount = Math.min(state.teams.length, state.players.length, Math.max(minimumGroups, Math.ceil(state.players.length / targetSize)));
+        dispatch({ type: "hydrate", state: { ...state, players: state.players.map((player, index) => ({ ...player, teamId: state.teams[index % groupCount]?.id ?? null })) } });
+        const sizes = Array.from({ length: groupCount }, (_, index) => state.players.filter((_, playerIndex) => playerIndex % groupCount === index).length);
+        return { participantCount: state.players.length, requestedGroupCount: minimumGroups, targetSize, groupCount, sizes };
+      },
+      jeopardySets: [{ id: null, title: "Built-in Holy Qurbana boards", questionCount: state.questions.length, active: true }],
+      createJeopardySet: async () => {},
+      activateJeopardySet: async () => {},
+      resolveJeopardyManually: async (teamId, multiplier) => {
+        const question = state.questions.find((item) => item.id === state.currentQuestionId);
+        if (question) {
+          const scoreLedger = teamId && multiplier ? [...state.scoreLedger, { id: `manual-${Date.now()}`, teamId, delta: question.value * multiplier, reason: `${question.category} (manual)`, questionId: question.id, createdAt: Date.now() }] : state.scoreLedger;
+          dispatch({ type: "hydrate", state: { ...state, scoreLedger, currentQuestionId: undefined, buzzWindow: undefined, questions: state.questions.map((item) => item.id === question.id ? { ...item, used: true } : item) } });
+        }
+      },
     }),
     [state, dispatch, reset, currentRoom, join, joinRoom],
   );

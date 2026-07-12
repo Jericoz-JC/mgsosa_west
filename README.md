@@ -24,7 +24,7 @@ The current release uses a backend-first deployment: deploy and verify Convex fu
 
 ## Roles
 
-- Participant: joins with event code, name, and church; enters temporary breakout codes during rotations; uses the Jeopardy buzzer.
+- Participant: joins with event code, name, and church; waits for the Game Master to finalize teams; enters temporary breakout codes during rotations; optionally uses the Jeopardy buzzer.
 - Room Host: opens one private room-scoped link, runs the assigned activity, and reports the result.
 - Game Master: controls the event timeline, volunteer links, Jeopardy board, scores, and shared display.
 - Display: read-only screen-share surface with no private information.
@@ -56,6 +56,16 @@ To rotate the PIN, run `pnpm exec convex env set HOST_PIN --prod`, enter the new
 6. Press **Create + copy link** for each room and privately send that link only to its assigned Room Host. Replacing a link invalidates the previous link.
 7. Ask each Room Host to open the link and confirm that it shows the correct room. Test one participant join from a phone.
 
+### Finalize teams after check-in
+
+1. Leave participants unassigned while people are still joining.
+2. In the Game Master overview, use **Team builder** after attendance is stable.
+3. Choose the minimum number of groups and a target number of people per group. The console adds only enough groups to fit attendance near that target, up to eight.
+4. Review the projected sizes, then press **Assign everyone**. Running it again rebalances everyone, including late arrivals.
+5. Use **Copy all groups** for a complete Zoom-ready roster, or copy one team at a time for another organizer.
+
+Assignment is one Convex mutation: it reads the checked-in participants once, distributes the largest church cohorts first with a least-loaded algorithm, then writes each participant's team once. Group sizes differ by no more than one.
+
 ### Safe testing reset
 
 - Participant cleanup is under **Check-in â†’ Clear test participants** in the Game Master overview.
@@ -86,6 +96,21 @@ To rotate the PIN, run `pnpm exec convex env set HOST_PIN --prod`, enter the new
 7. Press **Close clue** to return to the board. If a clue stalls, reveal the answer and move on.
 8. At the end, select **Winners + close** on Event control and use the shared display for the final standings.
 9. If the first board runs short, return to the board and select **Round 2**. It adds 30 new age-balanced clues and preserves every team score. Round 1 can be reopened the same way.
+
+### Running Jeopardy without website buzzers
+
+- The **Manual score desk** is always available on the Game Master Jeopardy page. Enter any point amount, then add or deduct it from a team without consuming a card.
+- After selecting a clue, use the manual team buttons to award or deduct that clue's value. This records the score, marks the card used, and returns the public display to the board.
+- Use **No score · mark card used** when nobody answers. This prevents the board from getting stuck on an open clue.
+- The original synchronized participant buzzer remains available when desired.
+
+### Create and reuse a Jeopardy game set
+
+1. Open **Jeopardy → Game sets**.
+2. Enter a title and either add individual cards or use **Add 100–500 category** to create five rows at once.
+3. Fill in category, value, clue, and accepted answer for every card.
+4. Press **Save + make live**. The new set is stored in Convex and immediately becomes the public board.
+5. Return to **Game sets** later to switch between saved sets and the built-in Holy Qurbana boards. Switching boards keeps the event score ledger and clears the currently open clue.
 
 ## Find the Imposter Room Host instructions
 

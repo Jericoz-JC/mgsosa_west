@@ -14,6 +14,7 @@ import type * as rooms from "../rooms.js";
 import type * as scores from "../scores.js";
 import type * as security from "../security.js";
 import type * as seed from "../seed.js";
+import type * as teams from "../teams.js";
 
 import type {
   ApiFromModules,
@@ -28,6 +29,7 @@ declare const fullApi: ApiFromModules<{
   scores: typeof scores;
   security: typeof security;
   seed: typeof seed;
+  teams: typeof teams;
 }>;
 
 /**
