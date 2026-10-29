@@ -170,6 +170,8 @@ export function gameReducer(state: EventState, action: GameAction): EventState {
         ),
       };
     case "set-phase":
+      // Re-selecting the live phase keeps its start time so rooms and awards survive.
+      if (state.phase === action.phase) return { ...state, activeRoomMessage: action.message };
       return {
         ...state,
         phase: action.phase,

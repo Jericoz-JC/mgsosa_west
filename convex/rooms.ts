@@ -4,11 +4,13 @@ import type { Doc } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { internalMutation, mutation, query } from "./_generated/server";
 import {
-  assertHostPin,
+  assertGameMaster,
   assertRoomHostGrant,
   assertRoomHostTokenFormat,
+  findStaffSession,
   hashRoomHostToken,
 } from "./security";
+import { isBreakoutGameId } from "../lib/games/registry";
 
 // Links created during the day-before walkthrough must remain valid through
 // the following evening's event, while still expiring soon after game night.
@@ -106,9 +108,9 @@ export const joinRoom = mutation({
 });
 
 export const hostState = query({
-  args: { eventId: v.id("events"), hostPin: v.string() },
+  args: { eventId: v.id("events"), staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    if (!(await findStaffSession(ctx, "game-master", args.staffToken))) return null;
     const event = await ctx.db.get(args.eventId);
     if (!event) throw new ConvexError("Event not found.");
     const rooms = await ctx.db
@@ -155,14 +157,15 @@ export const hostState = query({
 export const createRoom = mutation({
   args: {
     eventId: v.id("events"),
-    hostPin: v.string(),
-    game: v.union(v.literal("imposter"), v.literal("gartic")),
+    staffToken: v.string(),
+    game: v.string(),
     name: v.string(),
     capacity: v.number(),
     rotationGroups: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
+    if (!isBreakoutGameId(args.game)) throw new ConvexError("Choose a breakout game from the game library.");
     const event = await ctx.db.get(args.eventId);
     if (!event) throw new ConvexError("Event not found.");
     const rooms = await ctx.db.query("breakoutRooms").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).collect();
@@ -186,9 +189,9 @@ export const createRoom = mutation({
 });
 
 export const setRoomCapacity = mutation({
-  args: { roomId: v.id("breakoutRooms"), capacity: v.number(), hostPin: v.string() },
+  args: { roomId: v.id("breakoutRooms"), capacity: v.number(), staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     if (!Number.isInteger(args.capacity) || args.capacity < 4 || args.capacity > 16) throw new ConvexError("Room size must be 4 to 16.");
     const room = await ctx.db.get(args.roomId);
     if (!room) throw new ConvexError("Room not found.");
@@ -216,9 +219,9 @@ export const expireHostGrant = internalMutation({
 });
 
 export const issueHostGrant = mutation({
-  args: { roomId: v.id("breakoutRooms"), token: v.string(), hostPin: v.string() },
+  args: { roomId: v.id("breakoutRooms"), token: v.string(), staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     assertRoomHostTokenFormat(args.token);
     const room = await ctx.db.get(args.roomId);
     if (!room) throw new ConvexError("Room not found.");
@@ -253,9 +256,9 @@ export const issueHostGrant = mutation({
 });
 
 export const revokeHostGrant = mutation({
-  args: { roomId: v.id("breakoutRooms"), hostPin: v.string() },
+  args: { roomId: v.id("breakoutRooms"), staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     const room = await ctx.db.get(args.roomId);
     if (!room) throw new ConvexError("Room not found.");
     const grants = await ctx.db
@@ -317,9 +320,9 @@ export const roomHostState = query({
 });
 
 export const setCodeAsHost = mutation({
-  args: { roomId: v.id("breakoutRooms"), code: v.string(), hostPin: v.string() },
+  args: { roomId: v.id("breakoutRooms"), code: v.string(), staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     const room = await ctx.db.get(args.roomId);
     if (!room) throw new ConvexError("Room not found.");
     return await updateRoomCode(ctx, room, args.code);

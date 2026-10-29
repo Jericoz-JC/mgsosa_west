@@ -1,0 +1,569 @@
+.page {
+  display: grid;
+  gap: 24px;
+  max-width: 1400px;
+  margin-inline: auto;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 470px);
+  align-items: end;
+  gap: 30px;
+}
+
+.header h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3.4rem, 6vw, 6rem);
+  letter-spacing: -0.035em;
+  line-height: 0.82;
+  text-transform: uppercase;
+}
+
+.header > p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.roomPicker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.roomPicker button {
+  min-height: 96px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  color: var(--ink);
+  background: white;
+  cursor: pointer;
+  text-align: left;
+}
+
+.roomPicker button:hover,
+.roomPicker .selectedRoom {
+  color: white;
+  border-color: var(--navy-900);
+  background: var(--navy-900);
+  box-shadow: 0 14px 30px rgba(8, 35, 63, 0.18);
+}
+
+.roomPicker span,
+.roomPicker strong,
+.roomPicker small {
+  display: block;
+}
+
+.roomPicker span {
+  margin-bottom: 5px;
+  color: var(--blue-500);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.roomPicker strong {
+  font-size: 0.84rem;
+}
+
+.roomPicker small {
+  margin-top: 8px;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.1em;
+}
+
+.roomPicker .selectedRoom small {
+  color: var(--gold);
+}
+
+.consoleGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.55fr);
+  align-items: start;
+  gap: 20px;
+}
+
+.runConsole {
+  overflow: hidden;
+  border-radius: 28px;
+  color: white;
+  background: var(--navy-950);
+  box-shadow: var(--shadow);
+}
+
+.roomBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 19px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.roomBar span,
+.roomBar strong {
+  display: block;
+}
+
+.roomBar span {
+  margin-bottom: 4px;
+  color: var(--sky-300);
+  font-size: 0.63rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.roomBar strong {
+  font-size: 0.9rem;
+}
+
+.codeBox {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.copyFeedback {
+  flex-basis: 100%;
+  color: var(--sky-300);
+  font-size: 0.6rem;
+  font-style: normal;
+  font-weight: 750;
+  text-align: right;
+}
+
+.codeBox small {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.codeBox b {
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+}
+
+.codeBox button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 12px;
+  color: white;
+  background: rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+}
+
+.stageHero {
+  min-height: 500px;
+  padding: clamp(34px, 6vw, 70px);
+  background: var(--navy-950);
+}
+
+.stageHero h2 {
+  max-width: 700px;
+  margin: 28px 0 16px;
+  font-family: var(--font-display);
+  font-size: clamp(3.4rem, 7vw, 6.8rem);
+  letter-spacing: -0.035em;
+  line-height: 0.83;
+  text-transform: uppercase;
+}
+
+.stageHero > p {
+  max-width: 620px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: fit-content;
+  margin: 28px 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.timer strong {
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 2.3rem;
+  letter-spacing: 0.06em;
+}
+
+.timer button {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  color: var(--navy-950);
+  background: var(--sky-300);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.primaryActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 34px;
+}
+
+.sideRail {
+  display: grid;
+  gap: 14px;
+}
+
+.sideRail > section {
+  padding: 21px;
+}
+
+.sideHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sideHeading h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  text-transform: uppercase;
+}
+
+.sideHeading > svg {
+  color: var(--blue-600);
+}
+
+.sideRail section > p {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.sideRail section > button {
+  width: 100%;
+}
+
+.hostLinkCard > button + button {
+  margin-top: 9px;
+}
+
+.revokeLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(152, 72, 63, 0.28);
+  border-radius: 8px;
+  color: var(--coral);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.linkReceipt {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 11px;
+  border: 1px dashed rgba(71, 111, 92, 0.5);
+  border-radius: 8px;
+  color: var(--green);
+  background: #edf2eb;
+}
+
+.linkReceipt span strong,
+.linkReceipt span small {
+  display: block;
+}
+
+.linkReceipt span strong {
+  font-size: 0.75rem;
+}
+
+.linkReceipt span small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+.linkReceipt button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--navy-900);
+  background: white;
+  cursor: pointer;
+}
+
+.linkReceipt input {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--navy-900);
+  background: white;
+  font-size: 0.64rem;
+}
+
+.sideRail ul {
+  display: grid;
+  gap: 3px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sideRail li {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 50px;
+  border-top: 1px solid var(--line);
+}
+
+.sideRail li > b {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  color: var(--blue-600);
+  background: var(--sky-100);
+  font-size: 0.68rem;
+}
+
+.sideRail li span strong,
+.sideRail li span small {
+  display: block;
+}
+
+.sideRail li span strong {
+  font-size: 0.78rem;
+}
+
+.sideRail li span small {
+  color: var(--muted);
+  font-size: 0.64rem;
+}
+
+.sideRail li > svg {
+  color: var(--green);
+}
+
+.resultsCard {
+  border-color: rgba(74, 195, 157, 0.4);
+  background: #e9eee8;
+}
+
+.teamButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 15px;
+}
+
+.teamButtons button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 11px;
+  color: white;
+  background: var(--team-color);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.teamButtons button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+@media (max-width: 1100px) {
+  .consoleGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .header {
+    grid-template-columns: 1fr;
+  }
+
+  .roomBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .codeBox {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .copyFeedback {
+    text-align: left;
+  }
+
+  .codeBox small {
+    display: none;
+  }
+
+  .stageHero {
+    min-height: 470px;
+    padding: 32px 22px;
+  }
+}
+.roomGuide { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: .8rem; align-items: center; margin: 1rem 0 1.25rem; padding: 1rem; border: 2px solid var(--line); border-radius: 18px; background: #f5efe1; box-shadow: 4px 4px 0 var(--ink); }
+.roomGuide div { display: grid; gap: .25rem; }
+.roomGuide strong { font-size: .78rem; }
+.roomGuide span { color: var(--muted); font-size: .68rem; line-height: 1.35; }
+.roomGuide > p, .addRoomForm { grid-column: 1 / -1; }
+.addRoomForm { display: grid !important; grid-template-columns: 1fr 220px auto; gap: .65rem !important; }
+.addRoomForm input, .addRoomForm select, .capacityControl select { min-height: 42px; border: 1px solid var(--line); border-radius: 9px; padding: 0 .7rem; background: #fff; font: inherit; }
+.capacityControl { display: grid; gap: .25rem; color: var(--muted); font-size: .65rem; }
+.capacityControl select { min-height: 36px; font-weight: 800; }
+@media (max-width: 900px) { .roomGuide { grid-template-columns: 1fr; } .addRoomForm { grid-template-columns: 1fr; } }
+
+.stageTrack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: stage;
+}
+
+.stageTrack li {
+  counter-increment: stage;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.stageTrack li::before {
+  content: counter(stage);
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.66rem;
+}
+
+.stageTrack .stageDone {
+  color: var(--sky-300);
+}
+
+.stageTrack .stageDone::before {
+  content: "✓";
+  color: var(--navy-950);
+  background: var(--sky-300);
+}
+
+.stageTrack .stageCurrent {
+  border-color: var(--gold);
+  color: var(--navy-950);
+  background: var(--gold);
+}
+
+.stageTrack .stageCurrent::before {
+  background: rgba(11, 28, 44, 0.16);
+}
+
+.sideRail .promptCard {
+  padding: 0;
+}
+
+.promptCard summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 64px;
+  padding: 16px 21px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.promptCard summary::-webkit-details-marker {
+  display: none;
+}
+
+.promptCard summary::after {
+  content: "Show";
+  color: var(--blue-600);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.promptCard[open] summary::after {
+  content: "Hide";
+}
+
+.promptCard summary small {
+  display: block;
+  color: var(--coral);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.promptCard summary strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.95rem;
+}
+
+.sideRail .promptCard ul {
+  margin: 0;
+  padding: 0 21px 18px;
+}
+
+.sideRail .promptCard li {
+  display: block;
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.86rem;
+}

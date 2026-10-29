@@ -7,7 +7,8 @@ import { createSeedState } from "@/lib/game/seed";
 import type { EventState, GameAction, ParticipantRoom } from "@/lib/game/types";
 import { GameContext, type GameContextValue, type JoinRequest } from "./game-context";
 
-const STORAGE_KEY = "mgsosa-west-demo-state-v1";
+// Versioned by event so a stored demo from an older game night is not reused.
+const STORAGE_KEY = `mgsosa-west-demo-state-v2-${createSeedState(0).eventCode}`;
 const CHANNEL_NAME = "mgsosa-west-demo-channel";
 
 function initializer() {
@@ -101,7 +102,7 @@ export function DemoGameProvider({ children }: { children: React.ReactNode }) {
       join,
       joinRoom,
       hostPin: "demo",
-      submitHostPin: async () => true,
+      submitHostPin: async () => ({ ok: true }),
       clearHostPin: () => {},
       roomHostView: null,
       activateRoomHost: () => {},

@@ -10,10 +10,12 @@
 
 import type * as events from "../events.js";
 import type * as jeopardy from "../jeopardy.js";
+import type * as qa from "../qa.js";
 import type * as rooms from "../rooms.js";
 import type * as scores from "../scores.js";
 import type * as security from "../security.js";
 import type * as seed from "../seed.js";
+import type * as staff from "../staff.js";
 
 import type {
   ApiFromModules,
@@ -24,10 +26,12 @@ import type {
 declare const fullApi: ApiFromModules<{
   events: typeof events;
   jeopardy: typeof jeopardy;
+  qa: typeof qa;
   rooms: typeof rooms;
   scores: typeof scores;
   security: typeof security;
   seed: typeof seed;
+  staff: typeof staff;
 }>;
 
 /**

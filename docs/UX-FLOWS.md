@@ -2,9 +2,20 @@
 
 The console intentionally gives each person only the information needed for their current job.
 
+## Visitor (public site)
+
+1. Browse events, conferences, churches, and the game library. No account needed.
+2. In Ask the Clergy, filter answers by conference (or browse everything), topic, and who verified the answer.
+3. Ask a question. It's anonymous by default and goes to a private review queue. Upvote questions you've wondered about too.
+
+## Q&A moderator
+
+1. Open `/qa/admin` with the moderator PIN.
+2. Approve or hide submissions, enter questions asked live at sessions, and publish answers verified by a priest, bishop, or guest speaker. Each answer shows the clergy member's name or only their role.
+
 ## Participant
 
-1. Open the shared link or scan the event QR code.
+1. Open the shared link (`/game`), press **Game Mode** in the site header, or scan the event QR code.
 2. Enter the event code, first name, and church.
 3. Receive a team and rotation group.
 4. During each rotation, enter the 4–6 digit code shared in the Zoom breakout room.

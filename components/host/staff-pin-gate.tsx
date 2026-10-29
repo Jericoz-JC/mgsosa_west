@@ -15,8 +15,8 @@ function PinForm() {
     setChecking(true);
     setError(undefined);
     try {
-      const valid = await submitHostPin(pin.trim());
-      if (!valid) setError("That PIN was not accepted. Check with the Game Master.");
+      const result = await submitHostPin(pin.trim());
+      if (!result.ok) setError(result.reason ?? "That PIN was not accepted.");
     } catch {
       setError("Could not verify the PIN. Check your connection and try again.");
     } finally {
@@ -30,7 +30,7 @@ function PinForm() {
         <div className="join-form-heading">
           <span className="status-pill status-live"><KeyRound size={13} /> Staff access</span>
           <h2>Game Master console</h2>
-          <p>Enter the Game Master PIN. Participants and room volunteers never need it.</p>
+          <p>Enter the Game Master PIN. It’s checked on the server and this tab keeps only a 12-hour session. Participants and room volunteers never need it.</p>
         </div>
         <div className="field">
           <label htmlFor="hostPin">Staff PIN</label>

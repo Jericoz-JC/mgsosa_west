@@ -1,11 +1,12 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { assertHostPin } from "./security";
+import { assertGameMaster, findStaffSession } from "./security";
 
 export const hostState = query({
-  args: { eventId: v.id("events"), hostPin: v.string() },
+  args: { eventId: v.id("events"), staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    // Null (not an error) tells the console its session ended, so it can ask again.
+    if (!(await findStaffSession(ctx, "game-master", args.staffToken))) return null;
     const game = await ctx.db.query("jeopardyGames").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).unique();
     const questions = await ctx.db.query("questions").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).collect();
     const buzzWindow = game?.currentBuzzWindowId ? await ctx.db.get(game.currentBuzzWindowId) : null;
@@ -14,9 +15,9 @@ export const hostState = query({
 });
 
 export const selectQuestion = mutation({
-  args: { eventId: v.id("events"), questionId: v.id("questions"), hostPin: v.string() },
+  args: { eventId: v.id("events"), questionId: v.id("questions"), staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     const question = await ctx.db.get(args.questionId);
     if (!question || question.eventId !== args.eventId || question.used) throw new ConvexError("Question is unavailable.");
     const game = await ctx.db.query("jeopardyGames").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).unique();
@@ -34,9 +35,9 @@ export const selectQuestion = mutation({
 });
 
 export const setRound = mutation({
-  args: { eventId: v.id("events"), round: v.union(v.literal(1), v.literal(2)), hostPin: v.string() },
+  args: { eventId: v.id("events"), round: v.union(v.literal(1), v.literal(2)), staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     const game = await ctx.db.query("jeopardyGames").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).unique();
     if (!game) throw new ConvexError("Jeopardy is not initialized.");
     await ctx.db.patch(game._id, { activeRound: args.round, currentQuestionId: undefined, currentBuzzWindowId: undefined });
@@ -44,9 +45,9 @@ export const setRound = mutation({
 });
 
 export const openBuzzers = mutation({
-  args: { eventId: v.id("events"), hostPin: v.string() },
+  args: { eventId: v.id("events"), staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     const game = await ctx.db.query("jeopardyGames").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).unique();
     if (!game?.currentBuzzWindowId) throw new ConvexError("Select a question first.");
     const window = await ctx.db.get(game.currentBuzzWindowId);
@@ -63,9 +64,9 @@ export const openBuzzers = mutation({
 });
 
 export const returnToBoard = mutation({
-  args: { eventId: v.id("events"), hostPin: v.string() },
+  args: { eventId: v.id("events"), staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     const game = await ctx.db.query("jeopardyGames").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).unique();
     if (!game) throw new ConvexError("Jeopardy is not initialized.");
     await ctx.db.patch(game._id, { currentQuestionId: undefined, currentBuzzWindowId: undefined });
@@ -96,9 +97,9 @@ export const buzz = mutation({
 });
 
 export const judge = mutation({
-  args: { eventId: v.id("events"), correct: v.boolean(), hostPin: v.string() },
+  args: { eventId: v.id("events"), correct: v.boolean(), staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     const [event, game] = await Promise.all([
       ctx.db.get(args.eventId),
       ctx.db.query("jeopardyGames").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).unique(),

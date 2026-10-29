@@ -84,13 +84,21 @@ describe("Jeopardy game engine", () => {
 
   it("updates a temporary room code in shared demo state", () => {
     const state = createSeedState(1000);
+    const roomId = state.breakoutRooms[1].id;
     const updated = gameReducer(state, {
       type: "set-room-code",
-      roomId: "room-gartic-a",
+      roomId,
       code: "86420",
     });
 
-    expect(updated.breakoutRooms.find((room) => room.id === "room-gartic-a")?.code).toBe("86420");
+    expect(updated.breakoutRooms.find((room) => room.id === roomId)?.code).toBe("86420");
+  });
+
+  it("keeps the phase start time when the live phase is selected again", () => {
+    const state = gameReducer(createSeedState(1000), { type: "set-phase", phase: "rotation-one", message: "Rotation 1", at: 2000 });
+    const again = gameReducer(state, { type: "set-phase", phase: "rotation-one", message: "Rotation 1", at: 9000 });
+    expect(again.phaseStartedAt).toBe(2000);
+    expect(gameReducer(again, { type: "set-phase", phase: "switching", message: "Switch", at: 9500 }).phaseStartedAt).toBe(9500);
   });
 
   it("switches Jeopardy rounds without changing scores", () => {

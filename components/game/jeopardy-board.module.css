@@ -76,8 +76,18 @@
   text-transform: uppercase;
 }
 
+/* Shared display: size the board to the viewport so the header and live
+   score bar both stay visible on a 720p screen share. */
 .displayOnly .board {
-  min-height: min(65vh, 700px);
+  height: clamp(320px, calc(100dvh - 330px), 700px);
+}
+
+.displayOnly .category {
+  grid-template-rows: minmax(44px, 0.9fr) repeat(5, minmax(44px, 1fr));
+}
+
+.displayOnly .category button {
+  min-height: 0;
 }
 
 @media (max-width: 700px) {

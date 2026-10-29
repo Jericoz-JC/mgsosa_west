@@ -37,7 +37,8 @@ export default defineSchema({
   breakoutRooms: defineTable({
     eventId: v.id("events"),
     name: v.string(),
-    game: v.union(v.literal("imposter"), v.literal("gartic")),
+    // A breakout game id from lib/games/registry.ts, validated in mutations.
+    game: v.string(),
     code: v.string(),
     hostName: v.string(),
     status: v.union(v.literal("draft"), v.literal("open"), v.literal("in-progress"), v.literal("closed")),
@@ -140,4 +141,58 @@ export default defineSchema({
   })
     .index("by_round", ["roundId"])
     .index("by_round_voter", ["roundId", "voterPlayerId"]),
+
+  qaQuestions: defineTable({
+    body: v.string(),
+    conference: v.string(),
+    topic: v.string(),
+    status: v.union(v.literal("submitted"), v.literal("open"), v.literal("answered"), v.literal("hidden")),
+    source: v.union(v.literal("community"), v.literal("admin")),
+    askerName: v.optional(v.string()),
+    askerChurch: v.optional(v.string()),
+    askerTokenHash: v.optional(v.string()),
+    answer: v.optional(v.object({
+      body: v.string(),
+      role: v.union(v.literal("priest"), v.literal("bishop"), v.literal("guest-speaker")),
+      name: v.optional(v.string()),
+      showName: v.boolean(),
+      session: v.optional(v.string()),
+      answeredAt: v.number(),
+    })),
+    votes: v.number(),
+    // Where a hidden question returns on Restore, so hiding never skips review.
+    restoreTo: v.optional(v.union(v.literal("submitted"), v.literal("open"), v.literal("answered"))),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_asker", ["askerTokenHash"]),
+
+  qaVotes: defineTable({
+    questionId: v.id("qaQuestions"),
+    voterHash: v.string(),
+  })
+    .index("by_question_voter", ["questionId", "voterHash"])
+    .index("by_voter", ["voterHash"])
+    .index("by_question", ["questionId"]),
+
+  staffSessions: defineTable({
+    role: v.union(v.literal("game-master"), v.literal("qa-admin")),
+    tokenHash: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_token_hash", ["tokenHash"])
+    .index("by_role", ["role"]),
+
+  staffSignInAttempts: defineTable({
+    role: v.union(v.literal("game-master"), v.literal("qa-admin")),
+    failedAt: v.number(),
+  }).index("by_role", ["role"]),
+
+  // Singleton (key "main"). Game Mode is live only while activeEventCode is set.
+  siteSettings: defineTable({
+    key: v.string(),
+    activeEventCode: v.optional(v.string()),
+  }).index("by_key", ["key"]),
 });

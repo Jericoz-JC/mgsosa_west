@@ -1,3 +1,4 @@
+import { DEMO_EVENT_CODE, gameEvents } from "./event-config";
 import type { EventState, JeopardyQuestion, Team } from "./types";
 
 export const teams: Team[] = [
@@ -11,7 +12,7 @@ const roundOneCategories = [
   {
     name: "Holy Qurbana Essentials",
     items: [
-      [100, "Meaning ‘offering of sacrifice,’ this Syriac word names the Holy Qurbana.", "Qurbana", "HQ-003", "Ages 9-12"],
+      [100, "Meaning ‘offering of sacrifice,’ this Syriac word is the name of our Eucharistic liturgy.", "Qurbana", "HQ-003", "Ages 9-12"],
       [200, "Holy Qurbana commemorates Christ’s birth, ministry, death, resurrection, and this promised event.", "The Second Coming", "HQ-002", "Ages 9-12"],
       [300, "These two primary sacramental elements are used for Holy Qurbana.", "Leavened bread and wine mixed with water", "HQ-008", "Ages 13-17"],
       [400, "Known as the Queen of Sacraments, this sacrament is the focus of the study guide.", "Holy Qurbana / Holy Communion", "HQ-004", "Ages 13-17"],
@@ -146,9 +147,10 @@ const roundTwoQuestions: JeopardyQuestion[] = roundTwoCategories.flatMap(([categ
 export const questions: JeopardyQuestion[] = [...roundOneQuestions, ...roundTwoQuestions];
 
 export function createSeedState(now = Date.now()): EventState {
+  const demoEvent = gameEvents[DEMO_EVENT_CODE];
   return {
-    eventCode: "WEST26",
-    eventTitle: "MGSOSA West Game Night",
+    eventCode: demoEvent.code,
+    eventTitle: demoEvent.title,
     phase: "jeopardy",
     phaseStartedAt: now,
     activeRoomMessage: "Main event • Bible Jeopardy",
@@ -159,10 +161,13 @@ export function createSeedState(now = Date.now()): EventState {
       { id: "player-sarah", name: "Sarah", church: "St. Thomas", teamId: "desert", role: "participant", connected: true },
       { id: "player-daniel", name: "Daniel", church: "St. Peter", teamId: "valley", role: "participant", connected: true },
     ],
-    breakoutRooms: [
-      { id: "room-imposter-a", name: "Imposter • Pacific", game: "imposter", code: "48215", hostName: "Room host needed", status: "open", rotationGroups: ["A", "C"], capacity: 12 },
-      { id: "room-gartic-a", name: "Gartic • Sierra", game: "gartic", code: "73106", hostName: "Room host needed", status: "open", rotationGroups: ["B", "D"], capacity: 12 },
-    ],
+    breakoutRooms: demoEvent.rooms.map((room) => ({
+      id: `room-${room.code}`,
+      ...room,
+      hostName: "Room host needed",
+      status: "open" as const,
+      capacity: 12,
+    })),
     questions,
     jeopardyRound: 1,
     scoreLedger: [

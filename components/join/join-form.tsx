@@ -57,7 +57,7 @@ export function JoinForm() {
           autoComplete="one-time-code"
           value={values.eventCode}
           onChange={(event) => setValues({ ...values, eventCode: event.target.value.toUpperCase() })}
-          placeholder="WEST26"
+          placeholder={state.eventCode}
         />
       </div>
       <div className="field">

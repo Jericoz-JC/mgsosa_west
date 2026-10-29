@@ -13,7 +13,7 @@
   --gold: #c7a35a;
   --coral: #98483f;
   --green: #476f5c;
-  --muted: #68727a;
+  --muted: #5b646b;
   --line: rgba(16, 43, 69, 0.18);
   --shadow: 0 14px 36px rgba(11, 28, 44, 0.14);
   --radius-sm: 8px;
@@ -64,8 +64,9 @@ a {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
-select:focus-visible {
-  outline: 3px solid var(--gold);
+select:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--focus-ring, var(--navy-950));
   outline-offset: 3px;
 }
 
@@ -377,7 +378,7 @@ p {
 
 @media (max-width: 720px) {
   .container {
-    width: min(100% - 24px, 1200px);
+    width: min(100% - 32px, 1200px);
   }
 
   .topbar {
@@ -402,4 +403,56 @@ p {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.skip-link {
+  position: absolute;
+  z-index: 100;
+  top: 8px;
+  left: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: white;
+  background: var(--navy-950);
+  font-weight: 800;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+.site-shell {
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+textarea:focus-visible {
+  outline: 3px solid var(--focus-ring, var(--navy-950));
+  outline-offset: 3px;
+}
+
+.field textarea {
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid rgba(8, 35, 63, 0.18);
+  border-radius: 8px;
+  padding: 14px 16px;
+  color: var(--navy-950);
+  background: #fffdf8;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.field small {
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+.form-error {
+  margin: 0;
+  color: #b43730;
+  font-size: 0.84rem;
+  font-weight: 700;
 }

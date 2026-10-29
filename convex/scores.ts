@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
-import { assertHostPin } from "./security";
+import { assertGameMaster } from "./security";
 
 export const adjust = mutation({
   args: {
@@ -8,11 +8,11 @@ export const adjust = mutation({
     teamId: v.id("teams"),
     delta: v.number(),
     reason: v.string(),
-    hostPin: v.string(),
+    staffToken: v.string(),
     idempotencyKey: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     const [event, team] = await Promise.all([ctx.db.get(args.eventId), ctx.db.get(args.teamId)]);
     if (!event) throw new ConvexError("Event not found.");
     if (!team || team.eventId !== event._id) {
@@ -39,9 +39,9 @@ export const adjust = mutation({
 });
 
 export const undoLast = mutation({
-  args: { eventId: v.id("events"), hostPin: v.string() },
+  args: { eventId: v.id("events"), staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     const entries = await ctx.db.query("scoreEvents").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).collect();
     const latest = entries.sort((a, b) => b.createdAt - a.createdAt)[0];
     if (latest) await ctx.db.delete(latest._id);
