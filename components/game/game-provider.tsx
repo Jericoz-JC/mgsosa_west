@@ -11,6 +11,6 @@ export { useGame } from "./game-context";
 const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL;
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
-  if (CONVEX_URL) return <ConvexGameProvider url={CONVEX_URL}>{children}</ConvexGameProvider>;
+  if (CONVEX_URL) return <ConvexGameProvider>{children}</ConvexGameProvider>;
   return <DemoGameProvider>{children}</DemoGameProvider>;
 }

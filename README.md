@@ -1,13 +1,32 @@
-# MGSOSA West Game Console
+# MGSOSA West website + Game Mode
 
-An online event console for MGSOSA West game nights: lightweight participant joining, breakout-room guidance, room-host tools, realtime Jeopardy buzzing, scoring, and a dedicated screen-share display.
+The website for MGSOSA West, the Western Region of the Mor Gregorios Syriac Orthodox Students Association. It has three parts:
+
+- **Public site.** Home, About, Events, Conferences, Churches, and the Game library.
+- **Ask the Clergy** (`/qa`). A moderated, forum-style conference Q&A. Anyone can ask, admins approve, and answers are published only after a priest, bishop, or guest speaker verifies them. Each answer shows either the clergy member's name or just their role ("Verified by a priest").
+- **Game Mode** (`/game`). The live online game-night console: participant joining, breakout-room codes, room-host tools, realtime Jeopardy buzzing, scoring, and a screen-share display.
 
 ## Stack
 
-- Next.js + TypeScript
-- Convex for synchronized game state
-- Vitest for typed domain and UI tests
+- Next.js (App Router) + TypeScript
+- Convex for realtime game state and the Q&A forum
+- Vitest for domain and UI tests
 - MGSOSA West-owned visual assets
+
+## Project map
+
+| Path | What lives there |
+| --- | --- |
+| `app/(site)/` | Public pages, wrapped in the site header and footer |
+| `app/(site)/qa/` | Ask the Clergy forum and the `/qa/admin` moderator console |
+| `app/(game)/` | Game Mode: `/game`, `/play`, `/room`, `/host/*`, `/display` |
+| `lib/site/` | Site copy: organization info, parishes, events |
+| `lib/qa/` | Conferences, topics, Q&A filters and validation (shared with Convex) |
+| `lib/games/registry.ts` | The game library. Breakout games here run in Game Mode automatically |
+| `lib/game/event-config.ts` | One entry per game night: event code, run of show, seeded rooms |
+| `convex/` | Backend functions (`qa.ts`, `events.ts`, `rooms.ts`, `jeopardy.ts`, `seed.ts`) |
+
+Guides: [set up a new event](docs/NEW-EVENT.md) · [add a game](docs/ADDING-A-GAME.md) · [moderate Ask the Clergy](docs/ASK-THE-CLERGY.md) · [event runbook](docs/EVENT-RUNBOOK.md) · [role pathways](docs/UX-FLOWS.md)
 
 ## Local development
 
@@ -16,7 +35,11 @@ pnpm install
 pnpm dev
 ```
 
-Copy `.env.example` to `.env.local`. When `NEXT_PUBLIC_CONVEX_URL` is empty, the interface runs on synchronized demo state. To connect the hosted realtime backend, follow [convex/README.md](convex/README.md); `pnpm convex dev` fills in the development URL automatically.
+Copy `.env.example` to `.env.local`. When `NEXT_PUBLIC_CONVEX_URL` is empty, everything runs on local demo state: Game Mode syncs across tabs, and Ask the Clergy shows clearly labeled sample questions saved only in your browser. To connect the hosted backend, follow [convex/README.md](convex/README.md).
+
+For a full local backend without a Convex account, run `CONVEX_AGENT_MODE=anonymous pnpm exec convex dev`. It starts a local deployment on `127.0.0.1:3210` and writes `.env.local`. Then set `HOST_PIN` and `QA_ADMIN_PIN` with `pnpm exec convex env set` and run the seed.
+
+Checks: `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`.
 
 ## Deploying to Vercel
 
@@ -24,17 +47,21 @@ The current release uses a backend-first deployment: deploy and verify Convex fu
 
 ## Roles
 
-- Participant: joins with event code, name, and church; enters temporary breakout codes during rotations; uses the Jeopardy buzzer.
+- Visitor: browses the site and asks or upvotes questions in Ask the Clergy. No account needed.
+- Q&A moderator: uses `/qa/admin` with the moderator PIN to approve, answer, hide, or delete questions.
+- Participant: enters Game Mode with the event code, name, and church; enters temporary breakout codes during rotations; uses the Jeopardy buzzer.
 - Room Host: opens one private room-scoped link, runs the assigned activity, and reports the result.
 - Game Master: controls the event timeline, volunteer links, Jeopardy board, scores, and shared display.
 - Display: read-only screen-share surface with no private information.
 
 ## Live website and access
 
-- Event website: [mgsosawest.com](https://mgsosawest.com)
+- Website: [mgsosawest.com](https://mgsosawest.com)
+- Game Mode (participants join here): [mgsosawest.com/game](https://mgsosawest.com/game)
+- Ask the Clergy: [mgsosawest.com/qa](https://mgsosawest.com/qa) · moderators: [mgsosawest.com/qa/admin](https://mgsosawest.com/qa/admin)
 - Game Master console: [mgsosawest.com/host](https://mgsosawest.com/host)
 - Shared display: [mgsosawest.com/display](https://mgsosawest.com/display)
-- Event code for participants: `WEST26`
+- Event code for participants: set by `NEXT_PUBLIC_EVENT_CODE` (`WEST26` for the July 11, 2026 game night; `WINTER27` for the proposed January 9, 2027 game night)
 
 The production Game Master PIN is stored in Convex and is intentionally not committed to this public repository. An authorized organizer can retrieve it with:
 
@@ -87,6 +114,14 @@ To rotate the PIN, run `pnpm exec convex env set HOST_PIN --prod`, enter the new
 8. At the end, select **Winners + close** on Event control and use the shared display for the final standings.
 9. If the first board runs short, return to the board and select **Round 2**. It adds 30 new age-balanced clues and preserves every team score. Round 1 can be reopened the same way.
 
+## Bible Who Am I? Room Host instructions
+
+1. Open the private Room Host link and paste the visible participant code into the assigned Zoom breakout chat.
+2. Open **Bible figures** in the side rail. It is host-only, so never screen share the console.
+3. Privately DM one participant a Bible figure. Everyone else asks yes-or-no questions, up to 20 per figure.
+4. Press **Start Question round** for the 5-minute timer, then **Start Lightning round** for one last figure.
+5. Tally correct guesses by team, press **Start Tally + score**, and award 200 to the winning team once.
+
 ## Find the Imposter Room Host instructions
 
 1. Open the private Room Host link sent by the Game Master. Do not forward it; it unlocks only your assigned room.
@@ -117,7 +152,7 @@ The floater follows the instructions for whichever activity they are assigned. T
 
 ## Participant instructions to announce
 
-1. Go to [mgsosawest.com](https://mgsosawest.com), enter `WEST26`, a first name, and church, then press **Enter the lobby**.
+1. Go to [mgsosawest.com/game](https://mgsosawest.com/game) (or press **Game Mode** on any page), enter the event code, a first name, and church, then press **Enter the lobby**.
 2. Keep the page open. It updates automatically when the Game Master changes phases.
 3. During a breakout rotation, enter the 4–6 digit code shared by that Room Host in Zoom.
 4. During Jeopardy, use the website buzzer only after the Game Master says the buzzers are open.

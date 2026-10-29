@@ -50,7 +50,7 @@ export interface GameContextValue {
   setRoomCode: (roomId: string, code: string) => Promise<void>;
   awardRoomResult: (roomId: string, teamId: TeamId, reason: string, idempotencyKey: string) => Promise<void>;
   clearParticipants: (confirmation: string, expectedCount: number) => Promise<number>;
-  createRoom: (input: { name: string; game: "imposter" | "gartic"; capacity: number; rotationGroups: string[] }) => Promise<void>;
+  createRoom: (input: { name: string; game: string; capacity: number; rotationGroups: string[] }) => Promise<void>;
   setRoomCapacity: (roomId: string, capacity: number) => Promise<void>;
 }
 

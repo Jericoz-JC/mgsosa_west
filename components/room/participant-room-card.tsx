@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Check, ExternalLink, Hash, MessageSquareText, PencilLine, UsersRound } from "lucide-react";
+import { ArrowRight, Check, CircleHelp, ExternalLink, Hash, MessageSquareText, PencilLine, UsersRound } from "lucide-react";
+import { gameName, getGame } from "@/lib/games/registry";
 import type { EventPhase, ParticipantRoom } from "@/lib/game/types";
 import styles from "./participant-room-card.module.css";
 
@@ -133,29 +134,19 @@ export function ParticipantRoomCard({ currentRoom, onJoin, phase }: ParticipantR
             <span className={styles.admitStamp} role="status"><Check aria-hidden size={17} /> You&apos;re in</span>
             <div className={styles.roomIdentity}>
               <span className={styles.gameIcon}>
-                {currentRoom.game === "imposter" ? <UsersRound aria-hidden /> : <PencilLine aria-hidden />}
+                {getGame(currentRoom.game)?.icon === "pencil" ? <PencilLine aria-hidden /> : getGame(currentRoom.game)?.icon === "help" ? <CircleHelp aria-hidden /> : <UsersRound aria-hidden />}
               </span>
               <div>
-                <p>{currentRoom.game === "imposter" ? "Find the Imposter" : "Gartic Phone"}</p>
+                <p>{gameName(currentRoom.game)}</p>
                 <h2>{currentRoom.name}</h2>
                 {currentRoom.rotationGroups.length ? <small>Rotation {currentRoom.rotationGroups.join(" · ")}</small> : null}
               </div>
             </div>
 
             <ol className={styles.instructions}>
-              {currentRoom.game === "imposter" ? (
-                <>
-                  <li><span>1</span><p><strong>Stay in this Zoom breakout.</strong> Your host will set the speaking order.</p></li>
-                  <li><span>2</span><p><strong>Watch Zoom private chat.</strong> Your secret word arrives there.</p></li>
-                  <li><span>3</span><p><strong>Keep it secret.</strong> Give one-word clues only when called.</p></li>
-                </>
-              ) : (
-                <>
-                  <li><span>1</span><p><strong>Stay in this Zoom breakout.</strong> Your host will share the Gartic link.</p></li>
-                  <li><span>2</span><p><strong>Use first name + church.</strong> That keeps points easy to track.</p></li>
-                  <li><span>3</span><p><strong>New Testament prompts only.</strong> Unmute together for the album reveal.</p></li>
-                </>
-              )}
+              {(getGame(currentRoom.game)?.participantSteps ?? [{ title: "Stay in this Zoom breakout.", detail: "Your host will explain the game." }]).map((step, index) => (
+                <li key={step.title}><span>{index + 1}</span><p><strong>{step.title}</strong> {step.detail}</p></li>
+              ))}
             </ol>
 
             <div className={styles.confirmationActions}>

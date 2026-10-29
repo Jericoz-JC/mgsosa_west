@@ -1,3 +1,4 @@
+import { activeGameEvent } from "./event-config";
 import type { EventState, JeopardyQuestion, Team } from "./types";
 
 export const teams: Team[] = [
@@ -147,8 +148,8 @@ export const questions: JeopardyQuestion[] = [...roundOneQuestions, ...roundTwoQ
 
 export function createSeedState(now = Date.now()): EventState {
   return {
-    eventCode: "WEST26",
-    eventTitle: "MGSOSA West Game Night",
+    eventCode: activeGameEvent.code,
+    eventTitle: activeGameEvent.title,
     phase: "jeopardy",
     phaseStartedAt: now,
     activeRoomMessage: "Main event • Bible Jeopardy",
@@ -159,10 +160,13 @@ export function createSeedState(now = Date.now()): EventState {
       { id: "player-sarah", name: "Sarah", church: "St. Thomas", teamId: "desert", role: "participant", connected: true },
       { id: "player-daniel", name: "Daniel", church: "St. Peter", teamId: "valley", role: "participant", connected: true },
     ],
-    breakoutRooms: [
-      { id: "room-imposter-a", name: "Imposter • Pacific", game: "imposter", code: "48215", hostName: "Room host needed", status: "open", rotationGroups: ["A", "C"], capacity: 12 },
-      { id: "room-gartic-a", name: "Gartic • Sierra", game: "gartic", code: "73106", hostName: "Room host needed", status: "open", rotationGroups: ["B", "D"], capacity: 12 },
-    ],
+    breakoutRooms: activeGameEvent.rooms.map((room) => ({
+      id: `room-${room.code}`,
+      ...room,
+      hostName: "Room host needed",
+      status: "open" as const,
+      capacity: 12,
+    })),
     questions,
     jeopardyRound: 1,
     scoreLedger: [

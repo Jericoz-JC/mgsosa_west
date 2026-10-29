@@ -64,7 +64,8 @@ export interface ScoreEvent {
 export interface BreakoutRoom {
   id: string;
   name: string;
-  game: "imposter" | "gartic";
+  /** Breakout game id from lib/games/registry.ts. */
+  game: string;
   code: string;
   hostName: string;
   status: "draft" | "open" | "in-progress" | "closed";

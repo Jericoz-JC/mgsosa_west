@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ExternalLink, Gamepad2, KeyRound, LayoutDashboard, MonitorUp, RotateCcw, UsersRound } from "lucide-react";
+import { ExternalLink, Gamepad2, Globe, KeyRound, LayoutDashboard, MonitorUp, RotateCcw, UsersRound } from "lucide-react";
 import { BrandLockup } from "@/components/brand/brand-lockup";
 import { useGame } from "@/components/game/game-provider";
 import { StaffPinGate } from "@/components/host/staff-pin-gate";
@@ -13,6 +13,7 @@ const nav = [
   { href: "/host/jeopardy", label: "Jeopardy", icon: Gamepad2 },
   { href: "/host/room", label: "Breakout rooms", icon: UsersRound },
   { href: "/display", label: "Display", icon: MonitorUp, external: true },
+  { href: "/", label: "Main website", icon: Globe, external: true },
 ];
 
 export function HostShell({ children }: { children: React.ReactNode }) {
@@ -23,11 +24,11 @@ export function HostShell({ children }: { children: React.ReactNode }) {
     <StaffPinGate>
       <div className={styles.shell}>
         <aside className={styles.sidebar}>
-          <BrandLockup href="/host" inverse />
+          <BrandLockup href="/host" inverse subtitle="Game Master" />
           <nav aria-label="Game Master navigation">
             {nav.map((item) => {
               const Icon = item.icon;
-              const active = item.href === "/host" ? pathname === "/host" : pathname.startsWith(item.href);
+              const active = !item.external && (item.href === "/host" ? pathname === "/host" : pathname.startsWith(item.href));
               return (
                 <Link className={active ? styles.active : undefined} href={item.href} key={item.href} target={item.external ? "_blank" : undefined} rel={item.external ? "noopener" : undefined}>
                   <Icon aria-hidden size={19} />

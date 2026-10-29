@@ -3,16 +3,24 @@ import "@fontsource-variable/manrope";
 import "@fontsource/barlow-condensed/600.css";
 import "@fontsource/barlow-condensed/700.css";
 import "./globals.css";
-import "@/components/game/game-components.css";
-import { GameProvider } from "@/components/game/game-provider";
+import { ConvexClientProvider } from "@/components/convex/convex-client-provider";
 
 export const metadata: Metadata = {
-  title: "MGSOSA West Game Console",
-  description: "The live game-night console for MGSOSA West.",
+  metadataBase: new URL("https://mgsosawest.com"),
+  title: {
+    default: "MGSOSA West • Syriac Orthodox youth of the Western Region",
+    template: "%s • MGSOSA West",
+  },
+  description:
+    "MGSOSA West brings together Syriac Orthodox youth from nine parishes across the Western Region for Bible studies, conferences, service, and game nights.",
   icons: {
     icon: [{ url: "/brand/mgsosa-mark-transparent.png", type: "image/png" }],
     shortcut: "/brand/mgsosa-mark-transparent.png",
     apple: "/brand/mgsosa-mark-navy.png",
+  },
+  openGraph: {
+    siteName: "MGSOSA West",
+    images: [{ url: "/brand/mgsosa-west-badge.jpg" }],
   },
 };
 
@@ -26,7 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <GameProvider>{children}</GameProvider>
+        <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
   );

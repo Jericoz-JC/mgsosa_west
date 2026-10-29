@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ConvexProvider, ConvexReactClient, useConvex, useMutation, useQuery } from "convex/react";
+import { useConvex, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { usePathname } from "next/navigation";
 import { api } from "@/convex/_generated/api";
@@ -12,6 +12,7 @@ import {
   isRoomHostToken,
   ROOM_HOST_SESSION_KEY,
 } from "@/lib/game/room-host";
+import { activeEventCode } from "@/lib/game/event-config";
 import { sessionBelongsToEvent, sessionTokenStorageKey } from "@/lib/game/session";
 import type {
   EventPhase,
@@ -25,7 +26,7 @@ import type {
 import { GameContext, type GameContextValue, type JoinRequest } from "./game-context";
 
 const HOST_PIN_KEY = "mgsosa-west-host-pin";
-const EVENT_CODE = process.env.NEXT_PUBLIC_EVENT_CODE ?? "WEST26";
+const EVENT_CODE = activeEventCode;
 const SESSION_TOKEN_KEY = sessionTokenStorageKey(EVENT_CODE);
 
 function getSessionToken() {
@@ -419,7 +420,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
     return result.cleared;
   }, [clearParticipantsMutation, eventId, hostPin]);
 
-  const createRoom = useCallback(async (input: { name: string; game: "imposter" | "gartic"; capacity: number; rotationGroups: string[] }) => {
+  const createRoom = useCallback(async (input: { name: string; game: string; capacity: number; rotationGroups: string[] }) => {
     if (!eventId || !hostPin) throw new Error("Game Master access is required.");
     await createRoomMutation({ eventId, hostPin, ...input });
   }, [createRoomMutation, eventId, hostPin]);
@@ -544,7 +545,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
     return (
       <ConnectionScreen
         title="Event not ready"
-        detail={`No event found for code ${EVENT_CODE}. Seed it with: pnpm convex run seed:event '{"hostPin":"<pin>"}'`}
+        detail={`No event found for code ${EVENT_CODE}. Seed it with: pnpm convex run seed:event '{"hostPin":"<pin>","eventCode":"${EVENT_CODE}"}'`}
       />
     );
   }
@@ -561,11 +562,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function ConvexGameProvider({ url, children }: { url: string; children: React.ReactNode }) {
-  const [client] = useState(() => new ConvexReactClient(url));
-  return (
-    <ConvexProvider client={client}>
-      <ConvexGameState>{children}</ConvexGameState>
-    </ConvexProvider>
-  );
+/** Expects the root ConvexClientProvider to supply the realtime client. */
+export function ConvexGameProvider({ children }: { children: React.ReactNode }) {
+  return <ConvexGameState>{children}</ConvexGameState>;
 }

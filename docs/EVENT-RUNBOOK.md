@@ -1,4 +1,6 @@
-# July 11 online game-night runbook
+# Online game-night runbook
+
+Written for the July 11, 2026 game night (`WEST26`). For another event, use the times in that event's `runOfShow` in `lib/game/event-config.ts`. They also appear on the Game Master timeline.
 
 ## Before participants arrive
 

@@ -40,3 +40,24 @@ export async function assertRoomHostGrant(ctx: QueryCtx | MutationCtx, token: st
 export function normalizeCode(code: string) {
   return code.trim().toUpperCase();
 }
+
+/**
+ * Ask the Clergy moderators use QA_ADMIN_PIN. Until it is configured, the
+ * Game Master PIN also unlocks moderation so a fresh deployment is usable.
+ */
+export function isAdminPin(pin: string) {
+  const expected = process.env.QA_ADMIN_PIN || process.env.HOST_PIN;
+  return Boolean(expected) && pin === expected;
+}
+
+export function assertAdminPin(pin: string) {
+  if (!process.env.QA_ADMIN_PIN && !process.env.HOST_PIN) {
+    throw new ConvexError("QA_ADMIN_PIN is not configured for this deployment.");
+  }
+  if (!isAdminPin(pin)) throw new ConvexError("Admin access denied.");
+}
+
+export async function sha256Hex(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}

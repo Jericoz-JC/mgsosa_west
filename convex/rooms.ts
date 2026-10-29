@@ -9,6 +9,7 @@ import {
   assertRoomHostTokenFormat,
   hashRoomHostToken,
 } from "./security";
+import { isBreakoutGameId } from "../lib/games/registry";
 
 // Links created during the day-before walkthrough must remain valid through
 // the following evening's event, while still expiring soon after game night.
@@ -156,13 +157,14 @@ export const createRoom = mutation({
   args: {
     eventId: v.id("events"),
     hostPin: v.string(),
-    game: v.union(v.literal("imposter"), v.literal("gartic")),
+    game: v.string(),
     name: v.string(),
     capacity: v.number(),
     rotationGroups: v.array(v.string()),
   },
   handler: async (ctx, args) => {
     assertHostPin(args.hostPin);
+    if (!isBreakoutGameId(args.game)) throw new ConvexError("Choose a breakout game from the game library.");
     const event = await ctx.db.get(args.eventId);
     if (!event) throw new ConvexError("Event not found.");
     const rooms = await ctx.db.query("breakoutRooms").withIndex("by_event", (q) => q.eq("eventId", args.eventId)).collect();

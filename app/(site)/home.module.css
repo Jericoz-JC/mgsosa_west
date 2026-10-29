@@ -1,0 +1,298 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-bottom: 1px solid var(--line);
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: url("/brand/event-pattern.svg") repeat;
+  opacity: 0.055;
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.8fr);
+  align-items: center;
+  gap: clamp(32px, 6vw, 90px);
+  min-height: min(720px, calc(100vh - 74px));
+  padding-block: clamp(44px, 7vw, 80px);
+}
+
+.heroCopy {
+  padding-left: clamp(18px, 2.5vw, 32px);
+  border-left: 6px solid var(--gold);
+  animation: rise 600ms ease both;
+}
+
+.heroCopy h1 {
+  margin-bottom: 26px;
+  color: var(--navy-950);
+}
+
+.heroCopy h1 em {
+  color: var(--blue-600);
+  font-style: normal;
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 7px;
+  text-underline-offset: 7px;
+}
+
+.heroArt {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  animation: rise 700ms 80ms ease both;
+}
+
+.badge {
+  position: relative;
+  width: min(100%, 420px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 10px solid var(--warm);
+  border-radius: 50%;
+  box-shadow: 10px 10px 0 var(--navy-900);
+}
+
+.badge img {
+  object-fit: cover;
+}
+
+.nextCard {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  width: min(100%, 340px);
+  margin-top: -64px;
+  padding: 18px 20px;
+  border: 2px solid var(--navy-900);
+  border-radius: var(--radius-md);
+  background: var(--warm);
+  box-shadow: 6px 6px 0 var(--gold);
+  transition: transform 160ms ease;
+}
+
+.nextCard:hover {
+  transform: translateY(-3px);
+}
+
+.nextCard strong {
+  color: var(--navy-950);
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.nextCard > span:not(.nextLabel) {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--navy-800);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.nextCard > span:last-child {
+  justify-self: start;
+  margin-top: 4px;
+}
+
+.nextLabel {
+  color: var(--coral);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.gameStrip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  margin-top: 28px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--warm);
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.gameStrip:hover {
+  border-color: var(--navy-800);
+  transform: translateY(-2px);
+}
+
+.gameIcon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  color: var(--navy-950);
+  background: var(--gold);
+}
+
+.gameStrip strong,
+.gameStrip small {
+  display: block;
+}
+
+.gameStrip strong {
+  color: var(--navy-950);
+}
+
+.gameStrip small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.gameCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--blue-600);
+  font-size: 0.88rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.ministryGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border: 2px solid var(--navy-900);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--warm);
+}
+
+.ministry {
+  padding: 24px 20px;
+  border-right: 1px solid var(--line);
+}
+
+.ministry:last-child {
+  border-right: 0;
+}
+
+.ministry svg {
+  color: var(--blue-600);
+}
+
+.ministry h3 {
+  margin: 14px 0 8px;
+  color: var(--navy-950);
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.ministry p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.calloutActions {
+  display: grid;
+  gap: 10px;
+}
+
+.calloutActions :global(.button-ghost) {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.3);
+  background: transparent;
+}
+
+.parishStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.parishStrip li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--warm);
+}
+
+.parishStrip strong {
+  color: var(--navy-900);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.parishStrip span {
+  color: var(--blue-600);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 1080px) {
+  .ministryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ministry {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ministry:nth-child(2n) {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .heroGrid {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .badge {
+    width: min(70vw, 320px);
+  }
+}
+
+@media (max-width: 620px) {
+  .gameStrip {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .gameCta {
+    grid-column: 1 / -1;
+  }
+
+  .ministryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ministry {
+    border-right: 0;
+  }
+}

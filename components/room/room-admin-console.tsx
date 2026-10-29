@@ -15,19 +15,16 @@ import {
   Vote,
 } from "lucide-react";
 import { useGame } from "@/components/game/game-provider";
+import { breakoutGames, gameName, getGame, type HostStage } from "@/lib/games/registry";
 import { generateUniqueRoomCode } from "@/lib/game/room-codes";
-import styles from "@/app/host/room/room.module.css";
+import styles from "@/app/(game)/host/room/room.module.css";
 
-type Stage = "lobby" | "clues" | "discussion" | "vote" | "results";
 type ConsoleScope = "host" | "volunteer";
 
-const stageCopy: Record<Stage, { title: string; instruction: string; seconds: number; next?: Stage }> = {
-  lobby: { title: "Room lobby", instruction: "Confirm names, explain the rules, and make sure nobody is screen sharing.", seconds: 0, next: "clues" },
-  clues: { title: "Clue rounds", instruction: "Follow the speaking order. Each person gives one word only.", seconds: 180, next: "discussion" },
-  discussion: { title: "Open discussion", instruction: "Everyone may discuss who they think the Imposter is.", seconds: 60, next: "vote" },
-  vote: { title: "Simultaneous vote", instruction: "Count down 3–2–1, then everyone submits together.", seconds: 20, next: "results" },
-  results: { title: "Reveal + score", instruction: "Reveal the Imposter and submit the winning team points.", seconds: 0 },
-};
+const FALLBACK_STAGES: HostStage[] = [
+  { id: "lobby", title: "Room lobby", instruction: "Confirm names and explain the rules.", seconds: 0 },
+  { id: "results", title: "Score the round", instruction: "Submit the winning team points.", seconds: 0 },
+];
 
 function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
   const {
@@ -46,7 +43,7 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
   const sourceRooms = volunteer && roomHostView ? [roomHostView.room] : state.breakoutRooms;
   const rooms = sourceRooms;
   const [selectedId, setSelectedId] = useState(rooms[0]?.id);
-  const [stage, setStage] = useState<Stage>("lobby");
+  const [stageIndex, setStageIndex] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [running, setRunning] = useState(false);
   const [codeBusy, setCodeBusy] = useState(false);
@@ -58,16 +55,20 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
   const [codeCopyMessage, setCodeCopyMessage] = useState<string>();
   const [showAddRoom, setShowAddRoom] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
-  const [newRoomGame, setNewRoomGame] = useState<"imposter" | "gartic">("imposter");
+  const [newRoomGame, setNewRoomGame] = useState(breakoutGames[0].id);
   const [roomBusy, setRoomBusy] = useState(false);
   const [roomError, setRoomError] = useState<string>();
   const room = rooms.find((candidate) => candidate.id === selectedId) ?? rooms[0];
-  const copy = stageCopy[stage];
+  const game = room ? getGame(room.game) : undefined;
+  const stages = game?.hostStages?.length ? game.hostStages : FALLBACK_STAGES;
+  const copy = stages[Math.min(stageIndex, stages.length - 1)];
+  const nextStage = stages[stageIndex + 1];
+  const isResultsStage = stageIndex >= stages.length - 1;
   const roster = useMemo(
     () => volunteer && roomHostView
       ? roomHostView.members
-      : state.players.slice(0, room?.game === "imposter" ? 4 : 3),
-    [roomHostView, room?.game, state.players, volunteer],
+      : state.players.slice(0, 4),
+    [roomHostView, state.players, volunteer],
   );
   const awardKey = room && activeRotation ? `room-award:${room.id}:${state.phaseStartedAt}` : undefined;
   const awardedEvent = awardKey
@@ -101,15 +102,14 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
   }
 
   function advance() {
-    if (!copy.next) return;
-    const next = copy.next;
-    setStage(next);
-    setSeconds(stageCopy[next].seconds);
-    setRunning(stageCopy[next].seconds > 0);
+    if (!nextStage) return;
+    setStageIndex(stageIndex + 1);
+    setSeconds(nextStage.seconds);
+    setRunning(nextStage.seconds > 0);
   }
 
   function resetRound() {
-    setStage("lobby");
+    setStageIndex(0);
     setSeconds(0);
     setRunning(false);
   }
@@ -215,7 +215,7 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
         <button className="button button-dark" disabled={rooms.length >= 8} onClick={() => setShowAddRoom((value) => !value)} type="button">{showAddRoom ? "Cancel" : "+ Add breakout room"}</button>
         {showAddRoom ? <div className={styles.addRoomForm}>
           <input aria-label="New room name" onChange={(event) => setNewRoomName(event.target.value)} placeholder="Example: Imposter • Phoenix" value={newRoomName} />
-          <select aria-label="Game" onChange={(event) => setNewRoomGame(event.target.value as "imposter" | "gartic")} value={newRoomGame}><option value="imposter">Find the Imposter</option><option value="gartic">Gartic Phone</option></select>
+          <select aria-label="Game" onChange={(event) => setNewRoomGame(event.target.value)} value={newRoomGame}>{breakoutGames.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select>
           <button className="button button-gold" disabled={roomBusy || newRoomName.trim().length < 3} onClick={addRoom} type="button">{roomBusy ? "Adding…" : "Create room for 12"}</button>
         </div> : null}
         {roomError ? <p className="form-error" role="alert">{roomError}</p> : null}
@@ -225,7 +225,7 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
         <section className={styles.roomPicker} aria-label="Choose a room to manage">
           {rooms.map((candidate) => (
             <button aria-pressed={candidate.id === room.id} className={candidate.id === room.id ? styles.selectedRoom : undefined} onClick={() => { setSelectedId(candidate.id); setCodeCopyMessage(undefined); setLinkError(undefined); resetRound(); }} type="button" key={candidate.id}>
-              <span>{candidate.game === "imposter" ? "Find the Imposter" : "Gartic Phone"}</span>
+              <span>{gameName(candidate.game)}</span>
               <strong>{candidate.name}</strong>
               <small>{candidate.code || "Code not loaded"}</small>
             </button>
@@ -236,7 +236,7 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
       <div className={styles.consoleGrid}>
         <section className={styles.runConsole}>
           <div className={styles.roomBar}>
-            <div><span>{room.game === "imposter" ? "Find the Imposter" : "Gartic Phone"}</span><strong>{room.name}</strong></div>
+            <div><span>{gameName(room.game)}</span><strong>{room.name}</strong></div>
             <div className={styles.codeBox}>
               <small>Participant code</small>
               <b>{room.code || "—"}</b>
@@ -251,13 +251,16 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
           </div>
 
           <div className={styles.stageHero}>
-            <span className="status-pill status-live">Current step</span>
-            <h2>{room.game === "gartic" ? (stage === "results" ? "Choose the favorite" : "Open the Gartic room") : copy.title}</h2>
-            <p>{room.game === "gartic"
-              ? (stage === "results" ? "Ask everyone to vote in Zoom chat, then award the favorite album." : "Create the Gartic room, paste its link into Zoom chat, and confirm every nickname includes first name + church.")
-              : copy.instruction}</p>
+            <span className="status-pill status-live">Step {stageIndex + 1} of {stages.length}</span>
+            <h2>{copy.title}</h2>
+            <p>{copy.instruction}</p>
+            <ol className={styles.stageTrack} aria-label="Round steps">
+              {stages.map((item, index) => (
+                <li aria-current={index === stageIndex ? "step" : undefined} className={index < stageIndex ? styles.stageDone : index === stageIndex ? styles.stageCurrent : undefined} key={item.id}>{item.title}</li>
+              ))}
+            </ol>
 
-            {room.game === "imposter" && copy.seconds > 0 ? (
+            {copy.seconds > 0 ? (
               <div className={styles.timer}>
                 <Clock3 aria-hidden />
                 <strong>{String(Math.floor(seconds / 60)).padStart(2, "0")}:{String(seconds % 60).padStart(2, "0")}</strong>
@@ -266,12 +269,11 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
             ) : null}
 
             <div className={styles.primaryActions}>
-              {room.game === "imposter" && copy.next ? <button className="button button-gold" onClick={advance} type="button"><Play size={18} /> Start {stageCopy[copy.next].title}</button> : null}
-              {room.game === "gartic" && stage !== "results" ? (
-                <>
-                  <a className="button button-gold" href="https://garticphone.com" target="_blank" rel="noreferrer"><Link2 size={18} /> Open Gartic Phone</a>
-                  <button className="button button-ghost" onClick={() => setStage("results")} type="button"><Vote size={17} /> Finish reveal + vote</button>
-                </>
+              {copy.externalTool ? <a className="button button-gold" href={copy.externalTool.url} target="_blank" rel="noreferrer"><Link2 size={18} /> {copy.externalTool.label}</a> : null}
+              {nextStage ? (
+                <button className={copy.externalTool ? "button button-ghost" : "button button-gold"} onClick={advance} type="button">
+                  {nextStage.id === "results" ? <Vote size={17} /> : <Play size={18} />} Start {nextStage.title}
+                </button>
               ) : null}
               <button className="button button-ghost" onClick={resetRound} type="button"><RotateCcw size={17} /> Reset round</button>
             </div>
@@ -317,7 +319,21 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
             )}
           </section>
 
-          {stage === "results" && activeRotation ? (
+          {isResultsStage && !activeRotation ? (
+            <section className="card">
+              <div className={styles.sideHeading}><div><p className="eyebrow">Round result</p><h2>Scoring opens in a rotation</h2></div><Vote aria-hidden /></div>
+              <p>Points can be submitted once the Game Master starts Rotation one or Rotation two.</p>
+            </section>
+          ) : null}
+
+          {game?.hostPrompts ? (
+            <details className={`card ${styles.promptCard}`}>
+              <summary><span><small>Host only • never screen share</small><strong>{game.hostPrompts.label}</strong></span></summary>
+              <ul>{game.hostPrompts.items.map((item) => <li key={item}>{item}</li>)}</ul>
+            </details>
+          ) : null}
+
+          {isResultsStage && activeRotation ? (
             <section className={`card ${styles.resultsCard}`}>
               <div className={styles.sideHeading}><div><p className="eyebrow">Round result</p><h2>{awardedEvent ? "Score submitted" : "Award 200"}</h2></div><Vote aria-hidden /></div>
               {awardedEvent ? <p role="status">This room’s result for the current rotation is already recorded.</p> : <p>Select the winning team once. Duplicate submissions are blocked.</p>}
