@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Send } from "lucide-react";
-import { conferences, GENERAL_CONFERENCE, topics } from "@/lib/qa/conferences";
+import { conferences, GENERAL_CONFERENCE, isTopic, topics } from "@/lib/qa/conferences";
 import { QA_LIMITS, validateAsk } from "@/lib/qa/validation";
 import { WEST_REGION_CHURCHES } from "@/lib/game/churches";
 import { qaErrorMessage, useQA } from "./qa-context";
@@ -14,7 +14,7 @@ export function AskForm({ defaultConference }: { defaultConference?: string }) {
   const { ask } = useQA();
   const [values, setValues] = useState({ ...emptyForm, conference: defaultConference ?? GENERAL_CONFERENCE });
   const [shareName, setShareName] = useState(false);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useState<{ message: string; field: "body" | "topic" }>();
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
@@ -44,8 +44,11 @@ export function AskForm({ defaultConference }: { defaultConference?: string }) {
     };
     const result = validateAsk(input);
     if (!result.ok) {
-      setError(result.error);
-      bodyRef.current?.focus();
+      // validateAsk checks the question before the topic, so a missing topic is
+      // the failure only when the question itself is long enough.
+      const field = !isTopic(values.topic) && values.body.trim().length >= QA_LIMITS.questionMin ? "topic" : "body";
+      setError({ message: result.error, field });
+      document.getElementById(field === "topic" ? "ask-topic" : "ask-body")?.focus();
       return;
     }
     setBusy(true);
@@ -56,7 +59,7 @@ export function AskForm({ defaultConference }: { defaultConference?: string }) {
       setValues({ ...emptyForm, conference: values.conference });
       setShareName(false);
     } catch (cause) {
-      setError(qaErrorMessage(cause, "Your question could not be sent. Check your connection and try again."));
+      setError({ message: qaErrorMessage(cause, "Your question could not be sent. Check your connection and try again."), field: "body" });
     } finally {
       setBusy(false);
     }
@@ -88,8 +91,8 @@ export function AskForm({ defaultConference }: { defaultConference?: string }) {
           placeholder="Why do we face east when we pray?"
           value={values.body}
           ref={bodyRef}
-          aria-describedby={error ? "ask-error ask-body-help" : "ask-body-help"}
-          aria-invalid={Boolean(error)}
+          aria-describedby={error?.field === "body" ? "ask-error ask-body-help" : "ask-body-help"}
+          aria-invalid={error?.field === "body"}
         />
         <small id="ask-body-help">{values.body.length}/{QA_LIMITS.questionMax} • Please leave out personal details like phone numbers or last names.</small>
       </div>
@@ -104,7 +107,7 @@ export function AskForm({ defaultConference }: { defaultConference?: string }) {
         </div>
         <div className="field">
           <label htmlFor="ask-topic">Topic</label>
-          <select id="ask-topic" onChange={(event) => setValues({ ...values, topic: event.target.value })} value={values.topic}>
+          <select aria-describedby={error?.field === "topic" ? "ask-error" : undefined} aria-invalid={error?.field === "topic"} id="ask-topic" onChange={(event) => setValues({ ...values, topic: event.target.value })} value={values.topic}>
             <option value="">Choose a topic</option>
             {topics.map((topic) => <option key={topic}>{topic}</option>)}
           </select>
@@ -132,7 +135,7 @@ export function AskForm({ defaultConference }: { defaultConference?: string }) {
         </div>
       ) : null}
 
-      {error ? <p className="form-error" id="ask-error" role="alert">{error}</p> : null}
+      {error ? <p className="form-error" id="ask-error" role="alert">{error.message}</p> : null}
       <button className="button button-gold" disabled={busy} type="submit"><Send aria-hidden size={17} /> {busy ? "Sending…" : "Send for review"}</button>
     </form>
   );
