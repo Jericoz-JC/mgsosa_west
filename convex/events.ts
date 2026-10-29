@@ -1,12 +1,19 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { assertHostPin, normalizeCode } from "./security";
+import { assertGameMaster, normalizeCode } from "./security";
 
-export const verifyHostPin = query({
-  args: { hostPin: v.string() },
-  handler: async (_ctx, args) => {
-    const expected = process.env.HOST_PIN;
-    return Boolean(expected) && args.hostPin === expected;
+/**
+ * The Game Mode event that is live right now, or null between events. Set on
+ * the server with `convex run seed:event` and cleared with `seed:endEvent`.
+ */
+export const active = query({
+  args: {},
+  handler: async (ctx) => {
+    const settings = await ctx.db.query("siteSettings").withIndex("by_key", (q) => q.eq("key", "main")).unique();
+    const code = settings?.activeEventCode;
+    if (!code) return null;
+    const event = await ctx.db.query("events").withIndex("by_code", (q) => q.eq("code", code)).unique();
+    return event ? { code: event.code, title: event.title } : null;
   },
 });
 
@@ -174,9 +181,9 @@ export const publicState = query({
 });
 
 export const setPhase = mutation({
-  args: { eventId: v.id("events"), hostPin: v.string(), phase: v.string(), message: v.string() },
+  args: { eventId: v.id("events"), staffToken: v.string(), phase: v.string(), message: v.string() },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     const event = await ctx.db.get(args.eventId);
     if (!event) throw new ConvexError("Event not found.");
     // Re-selecting the live phase must not restart it: room membership and
@@ -196,12 +203,12 @@ export const setPhase = mutation({
 export const clearParticipants = mutation({
   args: {
     eventId: v.id("events"),
-    hostPin: v.string(),
+    staffToken: v.string(),
     confirmation: v.string(),
     expectedCount: v.number(),
   },
   handler: async (ctx, args) => {
-    assertHostPin(args.hostPin);
+    await assertGameMaster(ctx, args.staffToken);
     if (args.confirmation !== "CLEAR PARTICIPANTS") throw new ConvexError("Type CLEAR PARTICIPANTS exactly.");
     const event = await ctx.db.get(args.eventId);
     if (!event) throw new ConvexError("Event not found.");

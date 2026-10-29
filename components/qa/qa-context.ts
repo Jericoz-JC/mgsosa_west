@@ -10,9 +10,9 @@ export interface QAContextValue {
   myVotes: ReadonlySet<string>;
   ask: (input: AskInput) => Promise<void>;
   toggleVote: (questionId: string) => Promise<void>;
-  /** Moderator PIN entered on this device. Demo mode is always authorized. */
+  /** Server-issued moderator session token for this tab (never the PIN). Demo mode is always authorized. */
   adminPin: string | null;
-  submitAdminPin: (pin: string) => Promise<boolean>;
+  submitAdminPin: (pin: string) => Promise<{ ok: boolean; reason?: string }>;
   clearAdminPin: () => void;
   /** Every question including the private review queue; admins only. */
   adminQuestions: QAQuestion[] | undefined;

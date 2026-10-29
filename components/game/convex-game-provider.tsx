@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useConvex, useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { usePathname } from "next/navigation";
 import { api } from "@/convex/_generated/api";
@@ -12,7 +12,6 @@ import {
   isRoomHostToken,
   ROOM_HOST_SESSION_KEY,
 } from "@/lib/game/room-host";
-import { activeEventCode } from "@/lib/game/event-config";
 import { sessionBelongsToEvent, sessionTokenStorageKey } from "@/lib/game/session";
 import type {
   EventPhase,
@@ -23,17 +22,16 @@ import type {
   TeamId,
   JeopardyQuestion,
 } from "@/lib/game/types";
+import { useStaffSession } from "@/components/staff/use-staff-session";
 import { GameContext, type GameContextValue, type JoinRequest } from "./game-context";
+import { NoActiveEvent } from "./no-active-event";
 
-const HOST_PIN_KEY = "mgsosa-west-host-pin";
-const EVENT_CODE = activeEventCode;
-const SESSION_TOKEN_KEY = sessionTokenStorageKey(EVENT_CODE);
-
-function getSessionToken() {
-  let token = window.localStorage.getItem(SESSION_TOKEN_KEY);
+function getSessionToken(eventCode: string) {
+  const key = sessionTokenStorageKey(eventCode);
+  let token = window.localStorage.getItem(key);
   if (!token || token.length < 24) {
     token = `${crypto.randomUUID().replace(/-/g, "")}${Date.now().toString(36)}`;
-    window.localStorage.setItem(SESSION_TOKEN_KEY, token);
+    window.localStorage.setItem(key, token);
   }
   return token;
 }
@@ -162,49 +160,24 @@ function ConnectionScreen({ title, detail }: { title: string; detail: string }) 
   );
 }
 
-function ConvexGameState({ children }: { children: React.ReactNode }) {
-  const convex = useConvex();
+function ConvexGameState({ eventCode: EVENT_CODE, children }: { eventCode: string; children: React.ReactNode }) {
   const pathname = usePathname();
   const isHostRoute = pathname === "/host" || pathname.startsWith("/host/");
   const [sessionToken, setSessionToken] = useState<string>();
-  const [hostPin, setHostPin] = useState<string | null>(null);
+  const { token: hostPin, ready: credentialsReady, signIn: submitHostPin, clear: clearStaff } = useStaffSession("game-master");
   const [roomHostToken, setRoomHostToken] = useState<string | null>(null);
-  const [credentialsReady, setCredentialsReady] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    const token = getSessionToken();
+    const token = getSessionToken(EVENT_CODE);
     queueMicrotask(() => {
       if (!cancelled) setSessionToken(token);
     });
-    const storedHostPin = window.sessionStorage.getItem(HOST_PIN_KEY);
-    if (!storedHostPin) {
-      queueMicrotask(() => {
-        if (!cancelled) setCredentialsReady(true);
-      });
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    void convex.query(api.events.verifyHostPin, { hostPin: storedHostPin })
-      .then((valid) => {
-        if (cancelled) return;
-        if (valid) setHostPin(storedHostPin);
-        else window.sessionStorage.removeItem(HOST_PIN_KEY);
-      })
-      .catch(() => {
-        if (!cancelled) window.sessionStorage.removeItem(HOST_PIN_KEY);
-      })
-      .finally(() => {
-        if (!cancelled) setCredentialsReady(true);
-      });
-
     return () => {
       cancelled = true;
     };
-  }, [convex]);
+  }, [EVENT_CODE]);
 
   const data = useQuery(api.events.publicState, { eventCode: EVENT_CODE });
   const me = useQuery(
@@ -214,12 +187,17 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
   const eventId = data?.event._id;
   const hostView = useQuery(
     api.jeopardy.hostState,
-    hostPin && eventId && isHostRoute ? { eventId, hostPin } : "skip",
+    hostPin && eventId && isHostRoute ? { eventId, staffToken: hostPin } : "skip",
   );
   const hostRoomState = useQuery(
     api.rooms.hostState,
-    hostPin && eventId && isHostRoute ? { eventId, hostPin } : "skip",
+    hostPin && eventId && isHostRoute ? { eventId, staffToken: hostPin } : "skip",
   );
+
+  // Host queries return null once the server-side session expires or is revoked.
+  useEffect(() => {
+    if (hostPin && (hostView === null || hostRoomState === null)) clearStaff(false);
+  }, [hostPin, hostView, hostRoomState, clearStaff]);
   const roomHostData = useQuery(
     api.rooms.roomHostState,
     roomHostToken ? { token: roomHostToken } : "skip",
@@ -268,20 +246,20 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
       setActionError(null);
       switch (action.type) {
         case "select-question":
-          return run(selectQuestion({ eventId, questionId: action.questionId as Id<"questions">, hostPin: pin }));
+          return run(selectQuestion({ eventId, questionId: action.questionId as Id<"questions">, staffToken: pin }));
         case "open-buzzers":
-          return run(openBuzzers({ eventId, hostPin: pin }));
+          return run(openBuzzers({ eventId, staffToken: pin }));
         case "buzz":
           if (sessionToken) return run(buzz({ eventId, sessionToken }));
           return;
         case "mark-correct":
-          return run(judge({ eventId, correct: true, hostPin: pin }));
+          return run(judge({ eventId, correct: true, staffToken: pin }));
         case "mark-incorrect":
-          return run(judge({ eventId, correct: false, hostPin: pin }));
+          return run(judge({ eventId, correct: false, staffToken: pin }));
         case "return-to-board":
-          return run(returnToBoard({ eventId, hostPin: pin }));
+          return run(returnToBoard({ eventId, staffToken: pin }));
         case "set-jeopardy-round":
-          return run(setJeopardyRound({ eventId, round: action.round, hostPin: pin }));
+          return run(setJeopardyRound({ eventId, round: action.round, staffToken: pin }));
         case "adjust-score": {
           const teamId = mapped.teamIdBySlug.get(action.teamId);
           if (teamId) {
@@ -290,16 +268,16 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
               teamId,
               delta: action.delta,
               reason: action.reason,
-              hostPin: pin,
+              staffToken: pin,
               idempotencyKey: action.idempotencyKey,
             }));
           }
           return;
         }
         case "undo-score":
-          return run(undoScore({ eventId, hostPin: pin }));
+          return run(undoScore({ eventId, staffToken: pin }));
         case "set-phase":
-          return run(setPhase({ eventId, hostPin: pin, phase: action.phase, message: action.message }));
+          return run(setPhase({ eventId, staffToken: pin, phase: action.phase, message: action.message }));
         default:
           return;
       }
@@ -309,11 +287,11 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
 
   const join = useCallback(
     async (input: JoinRequest) => {
-      const token = getSessionToken();
+      const token = getSessionToken(EVENT_CODE);
       setSessionToken(token);
       await joinEvent({ eventCode: input.eventCode, sessionToken: token, name: input.name, church: input.church });
     },
-    [joinEvent],
+    [EVENT_CODE, joinEvent],
   );
 
   const joinRoom = useCallback(
@@ -326,22 +304,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
     [joinBreakoutRoom, sessionToken],
   );
 
-  const submitHostPin = useCallback(
-    async (pin: string) => {
-      const valid = await convex.query(api.events.verifyHostPin, { hostPin: pin });
-      if (valid) {
-        window.sessionStorage.setItem(HOST_PIN_KEY, pin);
-        setHostPin(pin);
-      }
-      return valid;
-    },
-    [convex],
-  );
-
-  const clearHostPin = useCallback(() => {
-    window.sessionStorage.removeItem(HOST_PIN_KEY);
-    setHostPin(null);
-  }, []);
+  const clearHostPin = useCallback(() => clearStaff(), [clearStaff]);
 
   const activateRoomHost = useCallback((token: string) => {
     setRoomHostToken(isRoomHostToken(token) ? token : null);
@@ -356,7 +319,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
     async (roomId: string) => {
       if (!hostPin) throw new Error("Game Master access is required.");
       const token = generateRoomHostToken();
-      await issueHostGrant({ roomId: roomId as Id<"breakoutRooms">, token, hostPin });
+      await issueHostGrant({ roomId: roomId as Id<"breakoutRooms">, token, staffToken: hostPin });
       return buildRoomHostLink(window.location.origin, token);
     },
     [hostPin, issueHostGrant],
@@ -365,7 +328,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
   const revokeRoomHostLink = useCallback(
     async (roomId: string) => {
       if (!hostPin) throw new Error("Game Master access is required.");
-      await revokeHostGrant({ roomId: roomId as Id<"breakoutRooms">, hostPin });
+      await revokeHostGrant({ roomId: roomId as Id<"breakoutRooms">, staffToken: hostPin });
     },
     [hostPin, revokeHostGrant],
   );
@@ -374,7 +337,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
     async (roomId: string, code: string) => {
       setActionError(null);
       const mutation = hostPin
-        ? setCodeAsHost({ roomId: roomId as Id<"breakoutRooms">, code, hostPin })
+        ? setCodeAsHost({ roomId: roomId as Id<"breakoutRooms">, code, staffToken: hostPin })
         : roomHostToken
           ? setCodeAsRoomHost({ token: roomHostToken, code })
           : Promise.reject(new Error("Room host access is required."));
@@ -399,7 +362,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
               teamId: teamDocumentId,
               delta: 200,
               reason,
-              hostPin,
+              staffToken: hostPin,
               idempotencyKey,
             })
         : roomHostToken
@@ -416,18 +379,18 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
 
   const clearParticipants = useCallback(async (confirmation: string, expectedCount: number) => {
     if (!eventId || !hostPin) throw new Error("Game Master access is required.");
-    const result = await clearParticipantsMutation({ eventId, hostPin, confirmation, expectedCount });
+    const result = await clearParticipantsMutation({ eventId, staffToken: hostPin, confirmation, expectedCount });
     return result.cleared;
   }, [clearParticipantsMutation, eventId, hostPin]);
 
   const createRoom = useCallback(async (input: { name: string; game: string; capacity: number; rotationGroups: string[] }) => {
     if (!eventId || !hostPin) throw new Error("Game Master access is required.");
-    await createRoomMutation({ eventId, hostPin, ...input });
+    await createRoomMutation({ eventId, staffToken: hostPin, ...input });
   }, [createRoomMutation, eventId, hostPin]);
 
   const setRoomCapacity = useCallback(async (roomId: string, capacity: number) => {
     if (!hostPin) throw new Error("Game Master access is required.");
-    await setRoomCapacityMutation({ roomId: roomId as Id<"breakoutRooms">, capacity, hostPin });
+    await setRoomCapacityMutation({ roomId: roomId as Id<"breakoutRooms">, capacity, staffToken: hostPin });
   }, [hostPin, setRoomCapacityMutation]);
 
   // undefined = lookup in flight, null = this device has not joined the event.
@@ -541,14 +504,7 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
   if (data === undefined || !credentialsReady) {
     return <ConnectionScreen title="Connecting…" detail="Reaching the live MGSOSA West event." />;
   }
-  if (data === null || !value) {
-    return (
-      <ConnectionScreen
-        title="Event not ready"
-        detail={`No event found for code ${EVENT_CODE}. Seed it with: pnpm convex run seed:event '{"hostPin":"<pin>","eventCode":"${EVENT_CODE}"}'`}
-      />
-    );
-  }
+  if (data === null || !value) return <NoActiveEvent />;
   return (
     <GameContext.Provider value={value}>
       {actionError ? (
@@ -562,7 +518,14 @@ function ConvexGameState({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Expects the root ConvexClientProvider to supply the realtime client. */
+/**
+ * Expects the root ConvexClientProvider to supply the realtime client. Game
+ * Mode follows whichever event the server marks live; between events it shows
+ * a friendly "no game night right now" page instead of any game controls.
+ */
 export function ConvexGameProvider({ children }: { children: React.ReactNode }) {
-  return <ConvexGameState>{children}</ConvexGameState>;
+  const active = useQuery(api.events.active, {});
+  if (active === undefined) return <ConnectionScreen title="Connecting…" detail="Reaching MGSOSA West Game Mode." />;
+  if (active === null) return <NoActiveEvent />;
+  return <ConvexGameState eventCode={active.code} key={active.code}>{children}</ConvexGameState>;
 }

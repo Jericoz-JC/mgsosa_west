@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Clock3, Gamepad2, Users } from "lucide-react";
 import { GameIcon } from "@/components/site/game-icon";
-import { activeGameEvent } from "@/lib/game/event-config";
+import { siteEvents, splitEvents, todayInPacific } from "@/lib/site/events";
 import { gameFormatLabel, games, type GameFormat } from "@/lib/games/registry";
 import shared from "@/components/site/site.module.css";
 import styles from "./games.module.css";
@@ -18,7 +18,10 @@ const sections: Array<{ format: GameFormat; title: string; detail: string }> = [
   { format: "in-person", title: "In-person icebreakers + games", detail: "Tested at SOFC. Print-and-play favorites for conferences and retreats." },
 ];
 
+export const revalidate = 3600;
+
 export default function GamesPage() {
+  const nextGameNight = splitEvents(siteEvents, todayInPacific()).upcoming.find((event) => event.kind === "game-night");
   return (
     <>
       <section className={shared.pageHero}>
@@ -28,7 +31,7 @@ export default function GamesPage() {
           <p className={shared.lede}>Every game MGSOSA West runs, with how to play, what you need, and how points work. Online game nights run in Game Mode—join from any phone with the event code.</p>
           <div className={shared.heroActions}>
             <Link className="button button-gold" href="/game"><Gamepad2 aria-hidden size={18} /> Enter Game Mode</Link>
-            <Link className="button button-ghost" href={`/events/${activeGameEvent.eventSlug}`}>Next game night <ArrowRight aria-hidden size={16} /></Link>
+            {nextGameNight ? <Link className="button button-ghost" href={`/events/${nextGameNight.slug}`}>Next game night <ArrowRight aria-hidden size={16} /></Link> : null}
           </div>
         </div>
       </section>

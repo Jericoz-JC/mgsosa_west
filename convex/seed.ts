@@ -1,19 +1,32 @@
 import { ConvexError, v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { internalMutation, type MutationCtx } from "./_generated/server";
 import { questions, teams } from "../lib/game/seed";
-import { DEFAULT_EVENT_CODE, gameEvents } from "../lib/game/event-config";
-import { assertHostPin } from "./security";
+import { gameEvents } from "../lib/game/event-config";
 
 /**
- * Creates or refreshes one Game Mode event from lib/game/event-config.ts.
- * Re-running is safe: missing rooms and questions are added, existing
- * questions are refreshed in place, and scores and participants are kept.
+ * Server-only event setup. These are internal functions, so they can be run
+ * only from the Convex CLI or dashboard by someone with deployment access;
+ * no PIN is passed around and nothing in the browser can call them.
+ *
+ *   pnpm exec convex run seed:event '{"eventCode":"WINTER27"}' --prod
+ *   pnpm exec convex run seed:endEvent --prod
  */
-export const event = mutation({
-  args: { hostPin: v.union(v.string(), v.number()), eventCode: v.optional(v.string()) },
+async function setActiveEvent(ctx: MutationCtx, activeEventCode: string | undefined) {
+  const settings = await ctx.db.query("siteSettings").withIndex("by_key", (q) => q.eq("key", "main")).unique();
+  if (settings) await ctx.db.patch(settings._id, { activeEventCode });
+  else await ctx.db.insert("siteSettings", { key: "main", activeEventCode });
+}
+
+/**
+ * Creates or refreshes one Game Mode event from lib/game/event-config.ts and,
+ * by default, makes it the live event. Re-running is safe: missing rooms and
+ * questions are added, existing questions are refreshed in place, and scores
+ * and participants are kept.
+ */
+export const event = internalMutation({
+  args: { eventCode: v.string(), activate: v.optional(v.boolean()) },
   handler: async (ctx, args) => {
-    assertHostPin(String(args.hostPin));
-    const code = (args.eventCode ?? DEFAULT_EVENT_CODE).trim().toUpperCase();
+    const code = args.eventCode.trim().toUpperCase();
     const config = gameEvents[code];
     if (!config) throw new ConvexError(`No event config for ${code}. Add it to lib/game/event-config.ts first.`);
 
@@ -77,6 +90,17 @@ export const event = mutation({
     const game = await ctx.db.query("jeopardyGames").withIndex("by_event", (q) => q.eq("eventId", eventId)).unique();
     if (game && game.activeRound === undefined) await ctx.db.patch(game._id, { activeRound: 1 });
     if (!game) await ctx.db.insert("jeopardyGames", { eventId, activeRound: 1 });
-    return eventId;
+
+    if (args.activate !== false) await setActiveEvent(ctx, code);
+    return { eventId, code, active: args.activate !== false };
+  },
+});
+
+/** Ends Game Mode: /game shows "no game night right now" until the next event is activated. */
+export const endEvent = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    await setActiveEvent(ctx, undefined);
+    return { active: null };
   },
 });

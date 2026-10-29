@@ -102,7 +102,7 @@ export function DemoGameProvider({ children }: { children: React.ReactNode }) {
       join,
       joinRoom,
       hostPin: "demo",
-      submitHostPin: async () => true,
+      submitHostPin: async () => ({ ok: true }),
       clearHostPin: () => {},
       roomHostView: null,
       activateRoomHost: () => {},

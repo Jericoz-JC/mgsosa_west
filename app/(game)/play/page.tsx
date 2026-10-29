@@ -7,7 +7,7 @@ import { BrandLockup } from "@/components/brand/brand-lockup";
 import { useGame } from "@/components/game/game-provider";
 import { ParticipantRoomCard } from "@/components/room/participant-room-card";
 import { getTeamScore } from "@/lib/game/engine";
-import { activeGameEvent } from "@/lib/game/event-config";
+import { getGameEventConfig } from "@/lib/game/event-config";
 import { timestamp } from "@/lib/game/time";
 import type { EventPhase, TeamId } from "@/lib/game/types";
 import styles from "./play.module.css";
@@ -76,6 +76,7 @@ export default function PlayerPage() {
   const myTeamLocked = state.buzzWindow?.lockedTeamIds.includes(player.teamId) ?? false;
   const rotationPhase = state.phase === "rotation-one" || state.phase === "rotation-two" ? state.phase : null;
   const waiting = standbyCopy(state.phase);
+  const followUp = getGameEventConfig(state.eventCode).followUp;
   const next = nextCopy[state.phase];
   const buzzState = useMemo(() => {
     if (!state.currentQuestionId) return "standby";
@@ -215,9 +216,9 @@ export default function PlayerPage() {
             <h2>{next.title}</h2>
             <p>{next.detail}</p>
           </div>
-          {activeGameEvent.followUp ? (
-            <Link className="button button-ghost" href={activeGameEvent.followUp.url} target="_blank">
-              {activeGameEvent.followUp.label} <ExternalLink size={16} />
+          {followUp ? (
+            <Link className="button button-ghost" href={followUp.url} target="_blank">
+              {followUp.label} <ExternalLink size={16} />
             </Link>
           ) : (
             <Link className="button button-ghost" href="/events" target="_blank">

@@ -5,15 +5,16 @@ import { useState } from "react";
 import { ArrowRight, CheckCircle2, Church, Clock3, Copy, Gamepad2, Radio, Trash2, Undo2, UsersRound } from "lucide-react";
 import { useGame } from "@/components/game/game-provider";
 import { ScoreStrip } from "@/components/game/score-strip";
-import { activeGameEvent } from "@/lib/game/event-config";
+import { getGameEventConfig } from "@/lib/game/event-config";
 import { gameName } from "@/lib/games/registry";
 import { timestamp } from "@/lib/game/time";
 import styles from "./host.module.css";
 
-const phases = activeGameEvent.runOfShow;
 
 export default function HostOverview() {
   const { state, dispatch, clearParticipants } = useGame();
+  const eventConfig = getGameEventConfig(state.eventCode);
+  const phases = eventConfig.runOfShow;
   const [clearText, setClearText] = useState("");
   const [clearBusy, setClearBusy] = useState(false);
   const [clearMessage, setClearMessage] = useState<string>();
@@ -40,7 +41,7 @@ export default function HostOverview() {
     <div className={styles.page}>
       <header className={styles.pageHeader}>
         <div>
-          <p className="eyebrow">Game Master console • {activeGameEvent.title}</p>
+          <p className="eyebrow">Game Master console • {eventConfig.title}</p>
           <h1>Run the whole night<br />from one place.</h1>
         </div>
         <div className={styles.headerActions}>

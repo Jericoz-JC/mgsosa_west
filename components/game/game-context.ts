@@ -37,9 +37,9 @@ export interface GameContextValue {
   currentRoom: ParticipantRoom | null | undefined;
   join: (input: JoinRequest) => Promise<void>;
   joinRoom: (code: string) => Promise<void>;
-  /** Host PIN entered on this device. Demo mode is always authorized. */
+  /** Server-issued Game Master session token for this tab (never the PIN). Demo mode is always authorized. */
   hostPin: string | null;
-  submitHostPin: (pin: string) => Promise<boolean>;
+  submitHostPin: (pin: string) => Promise<{ ok: boolean; reason?: string }>;
   clearHostPin: () => void;
   /** One-room volunteer access loaded from a private URL fragment. */
   roomHostView: RoomHostView | null | undefined;

@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useConvex, useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { hasConvex } from "@/components/convex/convex-client-provider";
+import { useStaffSession } from "@/components/staff/use-staff-session";
 import { createSampleQuestions } from "@/lib/qa/sample";
 import type { AdminSaveInput, AskInput, QAQuestion, QuestionStatus } from "@/lib/qa/types";
 import { validateAdminSave, validateAsk } from "@/lib/qa/validation";
@@ -13,7 +14,6 @@ import { QAContext, type QAContextValue } from "./qa-context";
 export { useQA } from "./qa-context";
 
 const VISITOR_TOKEN_KEY = "mgsosa-west-qa-visitor";
-const ADMIN_PIN_KEY = "mgsosa-west-qa-admin-pin";
 const DEMO_STORAGE_KEY = "mgsosa-west-qa-demo-v1";
 const DEMO_VOTES_KEY = "mgsosa-west-qa-demo-votes-v1";
 
@@ -75,7 +75,7 @@ function DemoQAProvider({ children }: { children: React.ReactNode }) {
         persist(current.map((question) => question.id === questionId ? { ...question, votes: Math.max(0, question.votes + (voted ? -1 : 1)) } : question));
       },
       adminPin: "demo",
-      submitAdminPin: async () => true,
+      submitAdminPin: async () => ({ ok: true }),
       clearAdminPin: () => {},
       adminQuestions: all,
       saveQuestion: async (input: AdminSaveInput) => {
@@ -105,28 +105,23 @@ function DemoQAProvider({ children }: { children: React.ReactNode }) {
 }
 
 function ConvexQAProvider({ children }: { children: React.ReactNode }) {
-  const convex = useConvex();
   const [visitorToken, setVisitorToken] = useState<string>();
-  const [adminPin, setAdminPin] = useState<string | null>(null);
+  const { token: adminPin, signIn: signInStaff, clear: clearStaff } = useStaffSession("qa-admin");
 
   useEffect(() => {
     let cancelled = false;
     const token = getVisitorToken();
     queueMicrotask(() => { if (!cancelled) setVisitorToken(token); });
-    const stored = window.sessionStorage.getItem(ADMIN_PIN_KEY);
-    if (stored) {
-      void convex.query(api.qa.verifyAdminPin, { adminPin: stored }).then((valid) => {
-        if (cancelled) return;
-        if (valid) setAdminPin(stored);
-        else window.sessionStorage.removeItem(ADMIN_PIN_KEY);
-      }).catch(() => window.sessionStorage.removeItem(ADMIN_PIN_KEY));
-    }
     return () => { cancelled = true; };
-  }, [convex]);
+  }, []);
 
   const questions = useQuery(api.qa.list, {});
   const voteIds = useQuery(api.qa.myVotes, visitorToken ? { voterToken: visitorToken } : "skip");
-  const adminQuestions = useQuery(api.qa.adminList, adminPin ? { adminPin } : "skip");
+  const adminQuestions = useQuery(api.qa.adminList, adminPin ? { staffToken: adminPin } : "skip");
+  // adminList returns null once the server-side session expires or is revoked.
+  useEffect(() => {
+    if (adminPin && adminQuestions === null) clearStaff(false);
+  }, [adminPin, adminQuestions, clearStaff]);
   const askMutation = useMutation(api.qa.ask);
   const voteMutation = useMutation(api.qa.toggleVote);
   const saveMutation = useMutation(api.qa.adminSave);
@@ -151,24 +146,14 @@ function ConvexQAProvider({ children }: { children: React.ReactNode }) {
       await voteMutation({ questionId: questionId as Id<"qaQuestions">, voterToken: visitorToken ?? getVisitorToken() });
     },
     adminPin,
-    submitAdminPin: async (pin) => {
-      const valid = await convex.query(api.qa.verifyAdminPin, { adminPin: pin });
-      if (valid) {
-        window.sessionStorage.setItem(ADMIN_PIN_KEY, pin);
-        setAdminPin(pin);
-      }
-      return valid;
-    },
-    clearAdminPin: () => {
-      window.sessionStorage.removeItem(ADMIN_PIN_KEY);
-      setAdminPin(null);
-    },
-    adminQuestions: adminQuestions as QAQuestion[] | undefined,
+    submitAdminPin: signInStaff,
+    clearAdminPin: () => clearStaff(),
+    adminQuestions: (adminQuestions ?? undefined) as QAQuestion[] | undefined,
     saveQuestion: async ({ id, ...input }) => {
       const result = validateAdminSave({ id, ...input });
       if (!result.ok) throw new Error(result.error);
       await saveMutation({
-        adminPin: requirePin(),
+        staffToken: requirePin(),
         id: id as Id<"qaQuestions"> | undefined,
         body: result.value.body,
         conference: result.value.conference,
@@ -178,12 +163,12 @@ function ConvexQAProvider({ children }: { children: React.ReactNode }) {
       });
     },
     setStatus: async (questionId, status) => {
-      await statusMutation({ adminPin: requirePin(), id: questionId as Id<"qaQuestions">, status });
+      await statusMutation({ staffToken: requirePin(), id: questionId as Id<"qaQuestions">, status });
     },
     deleteQuestion: async (questionId) => {
-      await deleteMutation({ adminPin: requirePin(), id: questionId as Id<"qaQuestions"> });
+      await deleteMutation({ staffToken: requirePin(), id: questionId as Id<"qaQuestions"> });
     },
-  }), [questions, voteIds, adminQuestions, adminPin, visitorToken, askMutation, voteMutation, saveMutation, statusMutation, deleteMutation, convex, requirePin]);
+  }), [questions, voteIds, adminQuestions, adminPin, visitorToken, askMutation, voteMutation, saveMutation, statusMutation, deleteMutation, signInStaff, clearStaff, requirePin]);
 
   return <QAContext.Provider value={value}>{children}</QAContext.Provider>;
 }

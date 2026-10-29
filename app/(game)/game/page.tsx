@@ -1,13 +1,17 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, Clock3, MonitorUp, ShieldCheck } from "lucide-react";
 import { BrandLockup } from "@/components/brand/brand-lockup";
 import { JoinForm } from "@/components/join/join-form";
-import { activeGameEvent } from "@/lib/game/event-config";
+import { useGame } from "@/components/game/game-provider";
+import { getGameEventConfig } from "@/lib/game/event-config";
 import styles from "./game.module.css";
 
 export default function GameModePage() {
-  const event = activeGameEvent;
+  const { state } = useGame();
+  const event = getGameEventConfig(state.eventCode);
   const [lineOne, lineTwo, lineThree] = event.headline;
 
   return (

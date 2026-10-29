@@ -175,4 +175,24 @@ export default defineSchema({
     .index("by_question_voter", ["questionId", "voterHash"])
     .index("by_voter", ["voterHash"])
     .index("by_question", ["questionId"]),
+
+  staffSessions: defineTable({
+    role: v.union(v.literal("game-master"), v.literal("qa-admin")),
+    tokenHash: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_token_hash", ["tokenHash"])
+    .index("by_role", ["role"]),
+
+  staffSignInAttempts: defineTable({
+    role: v.union(v.literal("game-master"), v.literal("qa-admin")),
+    failedAt: v.number(),
+  }).index("by_role", ["role"]),
+
+  // Singleton (key "main"). Game Mode is live only while activeEventCode is set.
+  siteSettings: defineTable({
+    key: v.string(),
+    activeEventCode: v.optional(v.string()),
+  }).index("by_key", ["key"]),
 });

@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { validateAdminSave, validateAsk } from "../lib/qa/validation";
-import { assertAdminPin, isAdminPin, sha256Hex } from "./security";
+import { assertStaff, findStaffSession, sha256Hex } from "./security";
 
 // Community questions wait in a private queue until an admin approves them,
 // so nothing a visitor types appears publicly without review.
@@ -116,15 +116,10 @@ export const toggleVote = mutation({
   },
 });
 
-export const verifyAdminPin = query({
-  args: { adminPin: v.string() },
-  handler: async (_ctx, args) => isAdminPin(args.adminPin),
-});
-
 export const adminList = query({
-  args: { adminPin: v.string() },
+  args: { staffToken: v.string() },
   handler: async (ctx, args) => {
-    assertAdminPin(args.adminPin);
+    if (!(await findStaffSession(ctx, "qa-admin", args.staffToken))) return null;
     const questions = await ctx.db.query("qaQuestions").order("desc").take(1000);
     return questions.map((question) => ({ ...toPublic(question), answer: question.answer, restoreTo: question.restoreTo }));
   },
@@ -132,7 +127,7 @@ export const adminList = query({
 
 export const adminSave = mutation({
   args: {
-    adminPin: v.string(),
+    staffToken: v.string(),
     id: v.optional(v.id("qaQuestions")),
     body: v.string(),
     conference: v.string(),
@@ -147,7 +142,7 @@ export const adminSave = mutation({
     })),
   },
   handler: async (ctx, args) => {
-    assertAdminPin(args.adminPin);
+    await assertStaff(ctx, "qa-admin", args.staffToken);
     const result = validateAdminSave(args);
     if (!result.ok) throw new ConvexError(result.error);
     const { body, conference, topic, status } = result.value;
@@ -177,9 +172,9 @@ export const adminSave = mutation({
 });
 
 export const adminSetStatus = mutation({
-  args: { adminPin: v.string(), id: v.id("qaQuestions"), status: statusValidator },
+  args: { staffToken: v.string(), id: v.id("qaQuestions"), status: statusValidator },
   handler: async (ctx, args) => {
-    assertAdminPin(args.adminPin);
+    await assertStaff(ctx, "qa-admin", args.staffToken);
     const question = await ctx.db.get(args.id);
     if (!question) throw new ConvexError("That question no longer exists.");
     if (args.status === "answered" && !question.answer) {
@@ -191,9 +186,9 @@ export const adminSetStatus = mutation({
 });
 
 export const adminDelete = mutation({
-  args: { adminPin: v.string(), id: v.id("qaQuestions") },
+  args: { staffToken: v.string(), id: v.id("qaQuestions") },
   handler: async (ctx, args) => {
-    assertAdminPin(args.adminPin);
+    await assertStaff(ctx, "qa-admin", args.staffToken);
     if (!(await ctx.db.get(args.id))) return;
     const votes = await ctx.db.query("qaVotes").withIndex("by_question", (q) => q.eq("questionId", args.id)).collect();
     for (const vote of votes) await ctx.db.delete(vote._id);

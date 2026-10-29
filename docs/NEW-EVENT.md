@@ -17,20 +17,26 @@ For a conference, also add it to `conferences` in `lib/qa/conferences.ts` so que
 
 1. Add an entry to `gameEvents` in `lib/game/event-config.ts` with a new uppercase `code` (for example `SPRING27`), the run of show, and the breakout `rooms` to seed. Each room's `game` must be a breakout game id from `lib/games/registry.ts`, and room codes must be unique 4–6 digit numbers.
 2. Set `gameEventCode` on the matching public event page and `eventSlug` on the config, so the two link to each other.
-3. Seed it in Convex. It's safe to re-run, and scores and participants are kept:
+3. Deploy, then seed and activate the event from the Convex CLI. It's safe to re-run, and scores and participants are kept:
 
    ```bash
-   pnpm exec convex run seed:event '{"hostPin":"<game-master-pin>","eventCode":"SPRING27"}' --prod
+   pnpm exec convex run seed:event '{"eventCode":"SPRING27"}' --prod
    ```
 
-4. In Vercel, set `NEXT_PUBLIC_EVENT_CODE=SPRING27` and redeploy. Game Mode, the Game Master console, and the display all switch to the new event. Previous events stay in the database.
+   Seeding is an internal Convex function, so only someone with deployment access can run it. No PIN is passed, and nothing in a browser can call it. Game Mode, the Game Master console, and the display switch to the new event immediately, with no Vercel change or redeploy. Add `"activate": false` to prepare an event without making it live yet.
+4. After the event, turn Game Mode off. `/game` then shows "No game night is live right now" with a link to the next event:
+
+   ```bash
+   pnpm exec convex run seed:endEvent --prod
+   ```
+
 5. Run `pnpm test`. The config tests check room games, codes, and links between pages.
 
-`DEFAULT_EVENT_CODE` in `lib/game/event-config.ts` is used when `NEXT_PUBLIC_EVENT_CODE` is unset, such as in local demo mode.
+The Game Master PIN (`HOST_PIN`) only needs to be set before the event night. Without it, sign-in on `/host` says Game Master access isn't set up yet. `DEMO_EVENT_CODE` in `lib/game/event-config.ts` is the event local demo mode previews.
 
 ## Current events
 
 | Code | Event | Status |
 | --- | --- | --- |
 | `WEST26` | Summer Game Night, July 11, 2026 | Past |
-| `WINTER27` | Winter Game Night, Saturday, January 9, 2027, 5:30–7:30 PM PT | Proposed, waiting on the team's vote. Debuts Bible Who Am I? |
+| `WINTER27` | Winter Game Night, Saturday, January 9, 2027, 5:30–7:30 PM PT | Proposed, waiting on the team's vote. Configured but not live until seeded. Debuts Bible Who Am I? |

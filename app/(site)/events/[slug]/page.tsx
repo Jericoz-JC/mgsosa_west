@@ -3,10 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CalendarDays, Clock3, Gamepad2, MapPin, MessageCircleQuestion } from "lucide-react";
 import { EventStatusTag } from "@/components/site/event-card";
-import { eventKindLabel, getEvent, siteEvents } from "@/lib/site/events";
-import { activeEventCode, gameEvents } from "@/lib/game/event-config";
+import { eventKindLabel, getEvent, siteEvents, todayInPacific } from "@/lib/site/events";
+import { gameEvents } from "@/lib/game/event-config";
 import { getGame } from "@/lib/games/registry";
 import shared from "@/components/site/site.module.css";
+
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return siteEvents.map((event) => ({ slug: event.slug }));
@@ -90,7 +92,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                 <ul className={shared.checkList} style={{ marginTop: 12 }}>
                   {gameIds.map((id) => { const game = getGame(id); return game ? <li key={id}><strong>{/[.?!]$/.test(game.name) ? game.name : `${game.name}.`}</strong> {game.tagline}</li> : null; })}
                 </ul>
-                {gameConfig.code === activeEventCode ? (
+                {(event.endDate ?? event.startDate) >= todayInPacific() ? (
                   <Link className="button button-gold" href="/game" style={{ marginTop: 18, width: "100%" }}><Gamepad2 aria-hidden size={18} /> Game Mode • code {gameConfig.code}</Link>
                 ) : null}
               </div>

@@ -1,4 +1,4 @@
-import { activeGameEvent } from "./event-config";
+import { DEMO_EVENT_CODE, gameEvents } from "./event-config";
 import type { EventState, JeopardyQuestion, Team } from "./types";
 
 export const teams: Team[] = [
@@ -147,9 +147,10 @@ const roundTwoQuestions: JeopardyQuestion[] = roundTwoCategories.flatMap(([categ
 export const questions: JeopardyQuestion[] = [...roundOneQuestions, ...roundTwoQuestions];
 
 export function createSeedState(now = Date.now()): EventState {
+  const demoEvent = gameEvents[DEMO_EVENT_CODE];
   return {
-    eventCode: activeGameEvent.code,
-    eventTitle: activeGameEvent.title,
+    eventCode: demoEvent.code,
+    eventTitle: demoEvent.title,
     phase: "jeopardy",
     phaseStartedAt: now,
     activeRoomMessage: "Main event • Bible Jeopardy",
@@ -160,7 +161,7 @@ export function createSeedState(now = Date.now()): EventState {
       { id: "player-sarah", name: "Sarah", church: "St. Thomas", teamId: "desert", role: "participant", connected: true },
       { id: "player-daniel", name: "Daniel", church: "St. Peter", teamId: "valley", role: "participant", connected: true },
     ],
-    breakoutRooms: activeGameEvent.rooms.map((room) => ({
+    breakoutRooms: demoEvent.rooms.map((room) => ({
       id: `room-${room.code}`,
       ...room,
       hostName: "Room host needed",

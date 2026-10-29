@@ -6,8 +6,8 @@ import type { EventPhase } from "./types";
  * the Convex seed creates. Imported by the Convex backend, so keep relative
  * imports only.
  *
- * To set up a new game night, add an entry, point NEXT_PUBLIC_EVENT_CODE at
- * it, and run the seed. See docs/NEW-EVENT.md.
+ * Which event is live is decided on the server: `convex run seed:event`
+ * activates one and `seed:endEvent` turns Game Mode off. See docs/NEW-EVENT.md.
  */
 
 export interface RunOfShowItem {
@@ -99,14 +99,11 @@ export const gameEvents: Record<string, GameEventConfig> = {
   },
 };
 
-/** The newest configured event; used when NEXT_PUBLIC_EVENT_CODE is unset. */
-export const DEFAULT_EVENT_CODE = "WINTER27";
+/** The event local demo mode (no Convex deployment) previews. */
+export const DEMO_EVENT_CODE = "WINTER27";
 
+/** Config for the live event's code, falling back to the demo event's copy. */
 export function getGameEventConfig(code: string | undefined): GameEventConfig {
   const normalized = code?.trim().toUpperCase();
-  return (normalized && gameEvents[normalized]) || gameEvents[DEFAULT_EVENT_CODE];
+  return (normalized && gameEvents[normalized]) || gameEvents[DEMO_EVENT_CODE];
 }
-
-export const activeEventCode = (process.env.NEXT_PUBLIC_EVENT_CODE?.trim().toUpperCase() || DEFAULT_EVENT_CODE);
-
-export const activeGameEvent = getGameEventConfig(activeEventCode);

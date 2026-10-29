@@ -15,13 +15,13 @@ Nothing a visitor types is public until a moderator approves it. Names are optio
 
 ## Moderator access
 
-Open `/qa/admin` and enter the moderator PIN. The PIN is stored in Convex and never in this repository:
+Open `/qa/admin` and enter the moderator PIN. The PIN lives only in a Convex environment variable, never in this repository or the browser:
 
 ```bash
 pnpm exec convex env set QA_ADMIN_PIN --prod
 ```
 
-If `QA_ADMIN_PIN` is not set, the Game Master `HOST_PIN` also unlocks moderation. Set a separate PIN so Q&A moderators don't need Game Master access.
+The server checks the PIN and gives that tab a 12-hour session. **Lock** ends the session early. Ten wrong PINs in 15 minutes pause moderator sign-in. Moderation has its own PIN, separate from the Game Master's. Until `QA_ADMIN_PIN` is set, `/qa/admin` says moderation isn't set up yet, while the public Q&A page works normally.
 
 ## Publishing an answer
 

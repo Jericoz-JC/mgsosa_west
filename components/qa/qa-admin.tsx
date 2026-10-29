@@ -55,7 +55,8 @@ function PinGate() {
     setBusy(true);
     setError(undefined);
     try {
-      if (!(await submitAdminPin(pin.trim()))) setError("That PIN was not accepted.");
+      const result = await submitAdminPin(pin.trim());
+      if (!result.ok) setError(result.reason ?? "That PIN was not accepted.");
     } catch {
       setError("Could not verify the PIN. Check your connection and try again.");
     } finally {
@@ -67,7 +68,7 @@ function PinGate() {
     <form className={`${styles.askPanel} ${styles.pinGate}`} onSubmit={submit}>
       <span className="status-pill status-live"><KeyRound size={13} /> Moderators only</span>
       <h2>Ask the Clergy admin</h2>
-      <p>Enter the moderator PIN to review submissions and publish clergy-verified answers.</p>
+      <p>Enter the moderator PIN to review submissions and publish clergy-verified answers. It’s checked on the server; this tab keeps only a 12-hour session.</p>
       <div className="field">
         <label htmlFor="admin-pin">Moderator PIN</label>
         <input autoComplete="off" id="admin-pin" onChange={(event) => setPin(event.target.value)} type="password" value={pin} />
@@ -221,7 +222,7 @@ export function QAAdmin() {
       {mode === "demo" ? (
         <div className={styles.demoBanner} role="note">
           <FlaskConical aria-hidden size={18} />
-          <p><strong>Preview mode.</strong> Changes are saved only in this browser. Connect Convex and set QA_ADMIN_PIN for the live forum.</p>
+          <p><strong>Preview mode.</strong> Changes are saved only in this browser. The live forum needs Convex with QA_ADMIN_PIN set on the server.</p>
         </div>
       ) : null}
 

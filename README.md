@@ -37,13 +37,13 @@ pnpm dev
 
 Copy `.env.example` to `.env.local`. When `NEXT_PUBLIC_CONVEX_URL` is empty, everything runs on local demo state: Game Mode syncs across tabs, and Ask the Clergy shows clearly labeled sample questions saved only in your browser. To connect the hosted backend, follow [convex/README.md](convex/README.md).
 
-For a full local backend without a Convex account, run `CONVEX_AGENT_MODE=anonymous pnpm exec convex dev`. It starts a local deployment on `127.0.0.1:3210` and writes `.env.local`. Then set `HOST_PIN` and `QA_ADMIN_PIN` with `pnpm exec convex env set` and run the seed.
+For a full local backend without a Convex account, run `CONVEX_AGENT_MODE=anonymous pnpm exec convex dev`. It starts a local deployment on `127.0.0.1:3210` and writes `.env.local`. Then set `HOST_PIN` and `QA_ADMIN_PIN` with `pnpm exec convex env set` and, to try Game Mode, run `pnpm exec convex run seed:event '{"eventCode":"WINTER27"}'`.
 
 Checks: `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`.
 
 ## Deploying to Vercel
 
-The current release uses a backend-first deployment: deploy and verify Convex functions, then build Vercel against that deployment with `NEXT_PUBLIC_CONVEX_URL` and `NEXT_PUBLIC_EVENT_CODE`. See [convex/README.md](convex/README.md) for the exact order.
+The current release uses a backend-first deployment: deploy and verify Convex functions, then build Vercel against that deployment with `NEXT_PUBLIC_CONVEX_URL`. That is the only frontend setting: staff PINs and the live event are server-side Convex settings, so the site deploys and runs with no event scheduled. See [convex/README.md](convex/README.md) for the exact order.
 
 ## Roles
 
@@ -61,9 +61,9 @@ The current release uses a backend-first deployment: deploy and verify Convex fu
 - Ask the Clergy: [mgsosawest.com/qa](https://mgsosawest.com/qa) · moderators: [mgsosawest.com/qa/admin](https://mgsosawest.com/qa/admin)
 - Game Master console: [mgsosawest.com/host](https://mgsosawest.com/host)
 - Shared display: [mgsosawest.com/display](https://mgsosawest.com/display)
-- Event code for participants: set by `NEXT_PUBLIC_EVENT_CODE` (`WEST26` for the July 11, 2026 game night; `WINTER27` for the proposed January 9, 2027 game night)
+- Event code for participants: whichever event is live on the server (see [set up a new event](docs/NEW-EVENT.md)). With no live event, every Game Mode page shows "No game night is live right now" and the rest of the site works normally.
 
-The production Game Master PIN is stored in Convex and is intentionally not committed to this public repository. An authorized organizer can retrieve it with:
+Staff PINs live only in Convex environment variables and are never committed or stored in a browser. Signing in sends the PIN once to the server, which returns a 12-hour session token for that tab. **Lock console** ends the session, and 10 wrong PINs in 15 minutes lock sign-in for that role. The production Game Master PIN is intentionally not committed to this public repository. An authorized organizer can retrieve it with:
 
 ```bash
 pnpm exec convex env get HOST_PIN --prod
