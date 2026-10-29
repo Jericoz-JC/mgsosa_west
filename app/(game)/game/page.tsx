@@ -15,7 +15,7 @@ export default function GameModePage() {
       <header className={`container topbar ${styles.topbar}`}>
         <BrandLockup href="/game" subtitle="Game Mode" />
         <div className={styles.staffLinks}>
-          <Link className={styles.siteLink} href="/"><ArrowLeft aria-hidden size={15} /> Main website</Link>
+          <Link aria-label="Main website" className={styles.siteLink} href="/"><ArrowLeft aria-hidden size={15} /> <span>Main website</span></Link>
           <Link href="/room">Room host</Link>
           <Link className="button button-dark" href="/host">Game Master</Link>
         </div>

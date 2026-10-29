@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { FlaskConical, MessageCircleQuestion, Search, ShieldCheck } from "lucide-react";
 import { conferences, GENERAL_CONFERENCE, isTopic, topics } from "@/lib/qa/conferences";
-import { conferenceCounts, defaultFilters, filterQuestions, type QAFilters } from "@/lib/qa/filters";
+import { conferenceCounts, defaultFilters, filterQuestions, matchesConference, type QAFilters } from "@/lib/qa/filters";
 import type { ClergyRole } from "@/lib/qa/types";
 import { AskForm } from "./ask-form";
 import { useQA } from "./qa-context";
@@ -47,8 +47,16 @@ export function QAForum() {
 
   const visible = useMemo(() => filterQuestions(questions ?? [], filters), [questions, filters]);
   const counts = useMemo(() => conferenceCounts(questions ?? [], filters.view), [questions, filters.view]);
-  const answeredTotal = questions?.filter((question) => question.status === "answered").length ?? 0;
-  const openTotal = questions?.filter((question) => question.status === "open").length ?? 0;
+  const inConference = (questions ?? []).filter((question) => matchesConference(question, filters.conference));
+  const answeredTotal = inConference.filter((question) => question.status === "answered").length;
+  const openTotal = inConference.filter((question) => question.status === "open").length;
+  const loaded = questions !== undefined;
+
+  // The list loads after the browser jumps to #ask, pushing the form down on
+  // phones where it sits below the list; jump again once content is in place.
+  useEffect(() => {
+    if (loaded && window.location.hash === "#ask") document.getElementById("ask")?.scrollIntoView();
+  }, [loaded]);
   const activeConference = conferences.find((conference) => conference.slug === filters.conference);
   const filtered = filters.topic !== "all" || filters.clergy !== "all" || filters.search.trim() !== "";
 

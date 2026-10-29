@@ -226,6 +226,7 @@
 }
 
 .callout {
+  --focus-ring: var(--gold);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -270,6 +271,16 @@
 .prose p {
   color: #3b4d5c;
   line-height: 1.75;
+}
+
+.prose .verse p {
+  color: white;
+}
+
+.cardGridFill {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 16px;
 }
 
 .prose h2 {

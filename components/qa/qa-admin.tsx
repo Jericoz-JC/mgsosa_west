@@ -275,7 +275,7 @@ export function QAAdmin() {
                 <button className="button button-ghost" disabled={busyId === question.id} onClick={() => { setEditing(draftFrom(question)); setMessage(undefined); window.scrollTo({ top: 0, behavior: "smooth" }); }} type="button"><PencilLine aria-hidden size={16} /> {question.answer ? "Edit answer" : "Answer"}</button>
               ) : null}
               {question.status === "hidden" ? (
-                <button className="button button-ghost" disabled={busyId === question.id} onClick={() => act(question, () => setStatus(question.id, question.answer ? "answered" : "open"), "Restored.")} type="button"><RotateCcw aria-hidden size={16} /> Restore</button>
+                <button className="button button-ghost" disabled={busyId === question.id} onClick={() => act(question, () => setStatus(question.id, question.restoreTo ?? "submitted"), question.restoreTo === "answered" ? "Restored to Answered." : question.restoreTo === "open" ? "Restored to Awaiting answer." : "Restored to the review queue.")} type="button"><RotateCcw aria-hidden size={16} /> Restore</button>
               ) : (
                 <button className="button button-ghost" disabled={busyId === question.id} onClick={() => act(question, () => setStatus(question.id, "hidden"), "Hidden from the public page.")} type="button"><EyeOff aria-hidden size={16} /> Hide</button>
               )}

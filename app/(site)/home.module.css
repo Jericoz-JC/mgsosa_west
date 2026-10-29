@@ -224,7 +224,7 @@
   list-style: none;
 }
 
-.parishStrip li {
+.parishStrip a {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -233,6 +233,10 @@
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--warm);
+}
+
+.parishStrip a:hover {
+  border-color: var(--navy-800);
 }
 
 .parishStrip strong {
@@ -275,11 +279,23 @@
   }
 
   .badge {
-    width: min(70vw, 320px);
+    width: min(56vw, 240px);
   }
 }
 
+.shortEyebrow {
+  display: none;
+}
+
 @media (max-width: 620px) {
+  .longEyebrow {
+    display: none;
+  }
+
+  .shortEyebrow {
+    display: inline;
+  }
+
   .gameStrip {
     grid-template-columns: auto minmax(0, 1fr);
   }

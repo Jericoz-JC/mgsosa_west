@@ -93,7 +93,9 @@ function DemoQAProvider({ children }: { children: React.ReactNode }) {
       setStatus: async (questionId: string, status: QuestionStatus) => {
         const question = current.find((candidate) => candidate.id === questionId);
         if (status === "answered" && !question?.answer) throw new Error("Add the clergy-verified answer before publishing it as answered.");
-        persist(current.map((candidate) => candidate.id === questionId ? { ...candidate, status } : candidate));
+        persist(current.map((candidate) => candidate.id === questionId
+          ? { ...candidate, status, restoreTo: status === "hidden" && candidate.status !== "hidden" ? candidate.status : undefined }
+          : candidate));
       },
       deleteQuestion: async (questionId: string) => persist(current.filter((question) => question.id !== questionId)),
     };

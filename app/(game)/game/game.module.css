@@ -154,7 +154,7 @@
   content: "";
   position: absolute;
   z-index: -2;
-  inset: -25% -45% -22% -25%;
+  inset: -6% -10% -6% -12%;
   border: 2px solid var(--navy-800);
   border-radius: 18px;
   background: #e5ded0 url("/brand/event-pattern.svg") repeat;
@@ -261,6 +261,8 @@
 }
 
 .roleNote {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
@@ -318,6 +320,16 @@
     background: var(--paper);
   }
 
+  /* On phones the join form is the job; put it first and drop the backdrop. */
+  .joinStage {
+    order: -1;
+  }
+
+  .joinStage::before,
+  .joinStage::after {
+    display: none;
+  }
+
   .hero {
     grid-template-columns: 1fr;
     padding-top: 42px;
@@ -337,6 +349,10 @@
 
 @media (max-width: 620px) {
   .staffLinks > a:nth-child(2) {
+    display: none;
+  }
+
+  .siteLink span {
     display: none;
   }
 

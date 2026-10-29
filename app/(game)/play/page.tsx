@@ -126,7 +126,7 @@ export default function PlayerPage() {
       <div className={`container ${styles.playerGrid}`}>
         <section className={styles.identityPanel}>
           <div>
-            <p className="eyebrow">Welcome back</p>
+            <p className="eyebrow">You’re checked in</p>
             <h1>{player.name}</h1>
             <p>{player.church} &bull; Rotation {player.rotationGroup}</p>
           </div>

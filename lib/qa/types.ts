@@ -26,6 +26,8 @@ export interface QAQuestion {
   askerChurch?: string;
   answer?: QAAnswer;
   votes: number;
+  /** Admin view only: the status a hidden question returns to on Restore. */
+  restoreTo?: Exclude<QuestionStatus, "hidden">;
   createdAt: number;
 }
 

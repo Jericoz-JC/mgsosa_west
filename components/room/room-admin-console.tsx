@@ -326,13 +326,6 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
             </section>
           ) : null}
 
-          {game?.hostPrompts ? (
-            <details className={`card ${styles.promptCard}`}>
-              <summary><span><small>Host only • never screen share</small><strong>{game.hostPrompts.label}</strong></span></summary>
-              <ul>{game.hostPrompts.items.map((item) => <li key={item}>{item}</li>)}</ul>
-            </details>
-          ) : null}
-
           {isResultsStage && activeRotation ? (
             <section className={`card ${styles.resultsCard}`}>
               <div className={styles.sideHeading}><div><p className="eyebrow">Round result</p><h2>{awardedEvent ? "Score submitted" : "Award 200"}</h2></div><Vote aria-hidden /></div>
@@ -340,6 +333,13 @@ function RoomAdminConsoleContent({ scope = "host" }: { scope?: ConsoleScope }) {
               <div className={styles.teamButtons}>{state.teams.map((team) => <button disabled={Boolean(awardedEvent) || awardBusy} style={{ "--team-color": team.color } as React.CSSProperties} onClick={() => award(team.id)} type="button" key={team.id}>{team.shortName}</button>)}</div>
             </section>
           ) : null}
+          {game?.hostPrompts ? (
+            <details className={`card ${styles.promptCard}`}>
+              <summary><span><small>Host only • never screen share</small><strong>{game.hostPrompts.label}</strong></span></summary>
+              <ul>{game.hostPrompts.items.map((item) => <li key={item}>{item}</li>)}</ul>
+            </details>
+          ) : null}
+
         </aside>
       </div>
     </div>

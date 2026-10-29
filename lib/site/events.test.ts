@@ -13,6 +13,11 @@ describe("site events", () => {
     expect(splitEvents(siteEvents, "2030-01-01").upcoming.map((event) => event.slug)).toEqual(["monthly-bible-study"]);
   });
 
+  it("lists dated events before recurring ones", () => {
+    const { upcoming } = splitEvents(siteEvents, "2026-10-29");
+    expect(upcoming.at(-1)?.status).toBe("recurring");
+  });
+
   it("links every game-night page to a configured Game Mode event", () => {
     for (const event of siteEvents.filter((candidate) => candidate.gameEventCode)) {
       const config = gameEvents[event.gameEventCode!];

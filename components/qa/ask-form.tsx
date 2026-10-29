@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Send } from "lucide-react";
 import { conferences, GENERAL_CONFERENCE, topics } from "@/lib/qa/conferences";
 import { QA_LIMITS, validateAsk } from "@/lib/qa/validation";
@@ -17,6 +17,21 @@ export function AskForm({ defaultConference }: { defaultConference?: string }) {
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+
+  // Arriving from an "Ask a question" link puts the cursor in the question box.
+  useEffect(() => {
+    const focusIfAsked = () => { if (window.location.hash === "#ask") bodyRef.current?.focus({ preventScroll: true }); };
+    focusIfAsked();
+    window.addEventListener("hashchange", focusIfAsked);
+    return () => window.removeEventListener("hashchange", focusIfAsked);
+  }, []);
+  const [followedConference, setFollowedConference] = useState(defaultConference);
+  if (defaultConference !== followedConference) {
+    // Follow the conference chip the visitor picks, without clearing their draft.
+    setFollowedConference(defaultConference);
+    setValues((current) => ({ ...current, conference: defaultConference ?? GENERAL_CONFERENCE }));
+  }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,6 +45,7 @@ export function AskForm({ defaultConference }: { defaultConference?: string }) {
     const result = validateAsk(input);
     if (!result.ok) {
       setError(result.error);
+      bodyRef.current?.focus();
       return;
     }
     setBusy(true);
@@ -71,7 +87,9 @@ export function AskForm({ defaultConference }: { defaultConference?: string }) {
           onChange={(event) => setValues({ ...values, body: event.target.value })}
           placeholder="Why do we face east when we pray?"
           value={values.body}
-          aria-describedby="ask-body-help"
+          ref={bodyRef}
+          aria-describedby={error ? "ask-error ask-body-help" : "ask-body-help"}
+          aria-invalid={Boolean(error)}
         />
         <small id="ask-body-help">{values.body.length}/{QA_LIMITS.questionMax} • Please leave out personal details like phone numbers or last names.</small>
       </div>
@@ -114,7 +132,7 @@ export function AskForm({ defaultConference }: { defaultConference?: string }) {
         </div>
       ) : null}
 
-      {error ? <p className="form-error" role="alert">{error}</p> : null}
+      {error ? <p className="form-error" id="ask-error" role="alert">{error}</p> : null}
       <button className="button button-gold" disabled={busy} type="submit"><Send aria-hidden size={17} /> {busy ? "Sending…" : "Send for review"}</button>
     </form>
   );

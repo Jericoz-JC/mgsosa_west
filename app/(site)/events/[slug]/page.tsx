@@ -88,7 +88,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
               <div className={shared.panel}>
                 <h3>Games on the night</h3>
                 <ul className={shared.checkList} style={{ marginTop: 12 }}>
-                  {gameIds.map((id) => { const game = getGame(id); return game ? <li key={id}><strong>{game.name}.</strong> {game.tagline}</li> : null; })}
+                  {gameIds.map((id) => { const game = getGame(id); return game ? <li key={id}><strong>{/[.?!]$/.test(game.name) ? game.name : `${game.name}.`}</strong> {game.tagline}</li> : null; })}
                 </ul>
                 {gameConfig.code === activeEventCode ? (
                   <Link className="button button-gold" href="/game" style={{ marginTop: 18, width: "100%" }}><Gamepad2 aria-hidden size={18} /> Game Mode • code {gameConfig.code}</Link>

@@ -18,6 +18,9 @@ function roomJoinError(error: unknown) {
   const data = error && typeof error === "object" && "data" in error ? error.data : undefined;
   const detail = typeof data === "string" ? data : error instanceof Error ? error.message : "";
 
+  if (/full/i.test(detail)) {
+    return "That room is full. Ask your Zoom host for another room code.";
+  }
   if (/not found|no longer open|not active/i.test(detail)) {
     return "That code is not active. Check the digits with your room host.";
   }

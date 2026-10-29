@@ -6,6 +6,7 @@
 }
 
 .sidebar {
+  --focus-ring: var(--gold);
   position: sticky;
   top: 0;
   display: flex;

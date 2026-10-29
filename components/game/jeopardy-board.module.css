@@ -77,7 +77,8 @@
 }
 
 .displayOnly .board {
-  min-height: min(65vh, 700px);
+  /* Leave room for the header and live score bar on a 720p screen share. */
+  min-height: clamp(420px, calc(100dvh - 330px), 700px);
 }
 
 @media (max-width: 700px) {

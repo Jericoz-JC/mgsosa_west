@@ -23,7 +23,7 @@ export default function HomePage() {
       <section className={styles.hero}>
         <div className={`container ${styles.heroGrid}`}>
           <div className={styles.heroCopy}>
-            <p className="eyebrow">{site.fullName} • {site.region}</p>
+            <p className="eyebrow"><span className={styles.longEyebrow}>{site.fullName}</span><span className={styles.shortEyebrow}>MGSOSA</span> • {site.region}</p>
             <h1 className="display-title">Faith.<br /><em>Fellowship.</em><br />The West.</h1>
             <p className={shared.lede}>
               Syriac Orthodox youth from nine parishes—from Seattle to San Diego to Denver—growing in faith together through Bible studies, conferences, service, and game nights.
@@ -111,7 +111,7 @@ export default function HomePage() {
         </div>
         <ul className={styles.parishStrip}>
           {parishes.map((parish) => (
-            <li key={parish.id}><strong>{parish.city}</strong><span>{parish.state}</span></li>
+            <li key={parish.id}><Link href={`/churches#${parish.id}`}><strong>{parish.city}</strong><span>{parish.state}</span></Link></li>
           ))}
         </ul>
       </section>

@@ -37,13 +37,15 @@ export function validateAsk(input: AskInput): ValidationResult<AskInput> {
   const body = cleanText(input.body);
   const askerName = cleanText(input.askerName) || undefined;
   const askerChurch = cleanText(input.askerChurch) || undefined;
-  if (body.length < QA_LIMITS.questionMin) return { ok: false, error: "Write your question in at least a full sentence." };
+  if (body.length < QA_LIMITS.questionMin) return { ok: false, error: "Questions need at least 10 characters—write it as a full sentence." };
   if (body.length > QA_LIMITS.questionMax) return { ok: false, error: `Keep questions under ${QA_LIMITS.questionMax} characters.` };
   if (!isConferenceSlug(input.conference)) return { ok: false, error: "Choose where this question came up." };
   if (!isTopic(input.topic)) return { ok: false, error: "Choose a topic for your question." };
   if (askerName && askerName.length > QA_LIMITS.nameMax) return { ok: false, error: "Use a shorter first name." };
   if (askerChurch && askerChurch.length > QA_LIMITS.churchMax) return { ok: false, error: "Use a shorter church name." };
-  if (/https?:\/\/|www\./i.test(body)) return { ok: false, error: "Links aren’t allowed in questions." };
+  if (/https?:\/\/|www\.|\b[a-z0-9-]+\.(com|org|net|io|co|me|ly|app|gg|xyz|info|tv)\b/i.test(body)) {
+    return { ok: false, error: "Links aren’t allowed in questions." };
+  }
   return { ok: true, value: { body, conference: input.conference, topic: input.topic, askerName, askerChurch } };
 }
 

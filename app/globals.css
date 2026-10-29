@@ -13,7 +13,7 @@
   --gold: #c7a35a;
   --coral: #98483f;
   --green: #476f5c;
-  --muted: #68727a;
+  --muted: #5b646b;
   --line: rgba(16, 43, 69, 0.18);
   --shadow: 0 14px 36px rgba(11, 28, 44, 0.14);
   --radius-sm: 8px;
@@ -64,8 +64,9 @@ a {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
-select:focus-visible {
-  outline: 3px solid var(--gold);
+select:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--focus-ring, var(--navy-950));
   outline-offset: 3px;
 }
 
@@ -377,7 +378,7 @@ p {
 
 @media (max-width: 720px) {
   .container {
-    width: min(100% - 24px, 1200px);
+    width: min(100% - 32px, 1200px);
   }
 
   .topbar {
@@ -427,7 +428,7 @@ p {
 }
 
 textarea:focus-visible {
-  outline: 3px solid var(--gold);
+  outline: 3px solid var(--focus-ring, var(--navy-950));
   outline-offset: 3px;
 }
 

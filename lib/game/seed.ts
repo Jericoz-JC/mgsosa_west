@@ -12,7 +12,7 @@ const roundOneCategories = [
   {
     name: "Holy Qurbana Essentials",
     items: [
-      [100, "Meaning ‘offering of sacrifice,’ this Syriac word names the Holy Qurbana.", "Qurbana", "HQ-003", "Ages 9-12"],
+      [100, "Meaning ‘offering of sacrifice,’ this Syriac word is the name of our Eucharistic liturgy.", "Qurbana", "HQ-003", "Ages 9-12"],
       [200, "Holy Qurbana commemorates Christ’s birth, ministry, death, resurrection, and this promised event.", "The Second Coming", "HQ-002", "Ages 9-12"],
       [300, "These two primary sacramental elements are used for Holy Qurbana.", "Leavened bread and wine mixed with water", "HQ-008", "Ages 13-17"],
       [400, "Known as the Queen of Sacraments, this sacrament is the focus of the study guide.", "Holy Qurbana / Holy Communion", "HQ-004", "Ages 13-17"],

@@ -266,6 +266,7 @@
 
 .answer p {
   margin: 0 0 12px;
+  white-space: pre-line;
   color: #2d3d4a;
   line-height: 1.7;
 }
@@ -405,7 +406,7 @@
   text-transform: uppercase;
 }
 
-.askPanel > p {
+.askPanel > p:not(:global(.form-error)) {
   margin: -6px 0 0;
   color: var(--muted);
   font-size: 0.86rem;

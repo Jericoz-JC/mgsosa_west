@@ -311,6 +311,16 @@
 @media (max-width: 680px) {
   .pageHeader {
     display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .pageHeader h1 {
+    font-size: clamp(2.25rem, 9vw, 4.75rem);
+    line-height: 0.9;
+  }
+
+  .clearPanel summary {
+    min-height: 44px;
   }
 
   .headerActions {
@@ -324,4 +334,67 @@
   .nowBanner a {
     grid-column: 2;
   }
+}
+
+.hostNeeded {
+  color: var(--coral) !important;
+  font-size: 0.75rem !important;
+  font-weight: 800;
+}
+
+.hostReady {
+  color: var(--green) !important;
+  font-size: 0.75rem !important;
+  font-weight: 800;
+}
+
+.scoreFix {
+  margin-top: 14px;
+  padding: 14px 18px;
+}
+
+.scoreFix summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  color: var(--navy-800);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.scoreFix p {
+  margin: 6px 0 12px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.scoreFixGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.scoreFixGrid > div {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-left: 4px solid var(--team-color);
+  border-radius: 6px;
+  background: var(--paper);
+}
+
+.scoreFixGrid .button,
+.scoreFix > button {
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 0.8rem;
+}
+
+.phaseList button:disabled {
+  cursor: default;
+  opacity: 1;
 }

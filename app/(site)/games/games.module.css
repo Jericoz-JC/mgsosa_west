@@ -17,7 +17,7 @@
 
 .game summary {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 16px;
   min-height: 84px;
@@ -28,6 +28,19 @@
 
 .game summary::-webkit-details-marker {
   display: none;
+}
+
+.game summary::after {
+  content: "How to play ›";
+  grid-column: -1;
+  color: var(--blue-600);
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.game[open] summary::after {
+  content: "Close ⌃";
 }
 
 .game summary:focus-visible {
@@ -118,7 +131,8 @@
     grid-template-columns: auto minmax(0, 1fr);
   }
 
-  .facts {
+  .facts,
+  .game summary::after {
     grid-column: 2;
   }
 

@@ -1,4 +1,5 @@
 .footer {
+  --focus-ring: var(--gold);
   margin-top: 96px;
   padding-top: 56px;
   color: rgba(255, 255, 255, 0.78);

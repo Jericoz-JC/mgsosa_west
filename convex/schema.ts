@@ -160,6 +160,8 @@ export default defineSchema({
       answeredAt: v.number(),
     })),
     votes: v.number(),
+    // Where a hidden question returns on Restore, so hiding never skips review.
+    restoreTo: v.optional(v.union(v.literal("submitted"), v.literal("open"), v.literal("answered"))),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

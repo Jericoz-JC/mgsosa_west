@@ -177,6 +177,14 @@ export const setPhase = mutation({
   args: { eventId: v.id("events"), hostPin: v.string(), phase: v.string(), message: v.string() },
   handler: async (ctx, args) => {
     assertHostPin(args.hostPin);
+    const event = await ctx.db.get(args.eventId);
+    if (!event) throw new ConvexError("Event not found.");
+    // Re-selecting the live phase must not restart it: room membership and
+    // once-per-rotation awards are keyed to phaseStartedAt.
+    if (event.phase === args.phase) {
+      if (event.activeRoomMessage !== args.message) await ctx.db.patch(args.eventId, { activeRoomMessage: args.message });
+      return;
+    }
     await ctx.db.patch(args.eventId, {
       phase: args.phase,
       activeRoomMessage: args.message,

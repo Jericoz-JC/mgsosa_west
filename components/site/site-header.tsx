@@ -31,7 +31,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className={styles.actions}>
-          <Link className={`button button-gold ${styles.gameButton}`} href="/game">
+          <Link aria-label="Game Mode" className={`button button-gold ${styles.gameButton}`} href="/game">
             <Gamepad2 aria-hidden size={18} /> <span>Game Mode</span>
           </Link>
           <button

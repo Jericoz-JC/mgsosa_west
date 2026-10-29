@@ -27,8 +27,11 @@ function toPublic(question: Doc<"qaQuestions">) {
     source: question.source,
     askerName: question.askerName,
     askerChurch: question.askerChurch,
-    // Draft answers stay private until the question is published as answered.
-    answer: question.status === "answered" ? question.answer : undefined,
+    // Draft answers stay private until published, and a clergy name never
+    // leaves the server when they chose to be shown by role only.
+    answer: question.status === "answered" && question.answer
+      ? { ...question.answer, name: question.answer.showName ? question.answer.name : undefined }
+      : undefined,
     votes: question.votes,
     createdAt: question.createdAt,
   };
@@ -123,7 +126,7 @@ export const adminList = query({
   handler: async (ctx, args) => {
     assertAdminPin(args.adminPin);
     const questions = await ctx.db.query("qaQuestions").order("desc").take(1000);
-    return questions.map((question) => ({ ...toPublic(question), answer: question.answer }));
+    return questions.map((question) => ({ ...toPublic(question), answer: question.answer, restoreTo: question.restoreTo }));
   },
 });
 
@@ -160,7 +163,7 @@ export const adminSave = mutation({
         }
       : undefined;
     if (existing) {
-      await ctx.db.patch(existing._id, { body, conference, topic, status, answer, updatedAt: now });
+      await ctx.db.patch(existing._id, { body, conference, topic, status, answer, restoreTo: undefined, updatedAt: now });
       return existing._id;
     }
     return await ctx.db.insert("qaQuestions", {
@@ -182,7 +185,8 @@ export const adminSetStatus = mutation({
     if (args.status === "answered" && !question.answer) {
       throw new ConvexError("Add the clergy-verified answer before publishing it as answered.");
     }
-    await ctx.db.patch(question._id, { status: args.status, updatedAt: Date.now() });
+    const restoreTo = args.status === "hidden" && question.status !== "hidden" ? question.status : undefined;
+    await ctx.db.patch(question._id, { status: args.status, restoreTo, updatedAt: Date.now() });
   },
 });
 

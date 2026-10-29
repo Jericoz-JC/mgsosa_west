@@ -14,7 +14,7 @@ export function EventCard({ event, past = false }: { event: SiteEvent; past?: bo
     <article className={styles.panel} style={{ display: "grid", alignContent: "start" }}>
       <div className={styles.tagRow}>
         <span className={styles.tag}>{eventKindLabel[event.kind]}</span>
-        {past ? <span className={styles.tag}>Past event</span> : <EventStatusTag event={event} />}
+        {past ? null : <EventStatusTag event={event} />}
       </div>
       <h3>{event.title}</h3>
       <p>{event.summary}</p>

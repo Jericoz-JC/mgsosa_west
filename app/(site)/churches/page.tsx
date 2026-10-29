@@ -23,11 +23,12 @@ export default function ChurchesPage() {
       {states.map((state) => (
         <section className={`container ${shared.section}`} key={state} style={{ paddingTop: 48 }}>
           <div className={shared.sectionHead}><h2 className="section-title">{stateName(state)}</h2></div>
-          <div className={shared.cardGrid}>
+          <div className={shared.cardGridFill}>
             {parishes.filter((parish) => parish.state === state).map((parish) => (
-              <article className={shared.panel} key={parish.id}>
+              <article className={shared.panel} id={parish.id} key={parish.id} style={{ scrollMarginTop: 96 }}>
                 <h3>{parish.name}</h3>
                 <ul className={shared.meta}><li><MapPin aria-hidden size={16} /> {parish.city}, {parish.state}</li></ul>
+                <a className={shared.textLink} href={`https://www.google.com/maps/search/${encodeURIComponent(`${parish.name} ${parish.city} ${parish.state}`)}`} rel="noreferrer" style={{ marginTop: 14 }} target="_blank">Find on the map →</a>
               </article>
             ))}
           </div>

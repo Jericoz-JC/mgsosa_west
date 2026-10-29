@@ -56,7 +56,7 @@ export const siteEvents: SiteEvent[] = [
       { time: "7:20", item: "Winners + closing prayer" },
     ],
     gameEventCode: "WINTER27",
-    cta: { label: "Preview Game Mode", href: "/game" },
+    cta: { label: "Open Game Mode • code WINTER27", href: "/game" },
   },
   {
     slug: "monthly-bible-study",
@@ -64,12 +64,12 @@ export const siteEvents: SiteEvent[] = [
     kind: "bible-study",
     startDate: "2026-11-01",
     dateLabel: "Once a month",
-    timeLabel: "Dates announced in the WhatsApp community",
+    timeLabel: "Dates shared in the WhatsApp community—ask your parish rep to join",
     location: "Online • Zoom",
     summary:
       "An online study for youth across the region, led by clergy and guest speakers chosen with our Spiritual Advisor. Bring your questions—answers that come up often are added to Ask the Clergy.",
     status: "recurring",
-    cta: { label: "Ask a question ahead of time", href: "/qa#ask" },
+    cta: { label: "Ask a question ahead of time", href: "/qa?conference=bible-study#ask" },
   },
   {
     slug: "sofc-2026",
@@ -111,8 +111,9 @@ export const siteEvents: SiteEvent[] = [
   },
 ];
 
+/** Dated events in calendar order, with recurring ones after them. */
 export function sortEvents(events: SiteEvent[]) {
-  return [...events].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  return [...events].sort((a, b) => Number(a.status === "recurring") - Number(b.status === "recurring") || a.startDate.localeCompare(b.startDate));
 }
 
 /** Splits by the event's last day so a multi-day event stays upcoming while it runs. */

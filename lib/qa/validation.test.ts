@@ -12,6 +12,7 @@ describe("validateAsk", () => {
   it("rejects short questions, links, unknown conferences, and missing topics", () => {
     expect(validateAsk({ ...ask, body: "Why?" }).ok).toBe(false);
     expect(validateAsk({ ...ask, body: "Please read https://example.com and answer" }).ok).toBe(false);
+    expect(validateAsk({ ...ask, body: "Is this site legit example.com/page please" }).ok).toBe(false);
     expect(validateAsk({ ...ask, conference: "nalc-1999" }).ok).toBe(false);
     expect(validateAsk({ ...ask, topic: "" }).ok).toBe(false);
   });

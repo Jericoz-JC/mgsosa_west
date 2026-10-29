@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, CheckCircle2, Church, Clock3, Copy, Gamepad2, Radio, Trash2, UsersRound } from "lucide-react";
+import { ArrowRight, CheckCircle2, Church, Clock3, Copy, Gamepad2, Radio, Trash2, Undo2, UsersRound } from "lucide-react";
 import { useGame } from "@/components/game/game-provider";
 import { ScoreStrip } from "@/components/game/score-strip";
 import { activeGameEvent } from "@/lib/game/event-config";
@@ -26,6 +26,10 @@ export default function HostOverview() {
     } catch (error) {
       setClearMessage(error instanceof Error ? error.message : "Participants could not be cleared.");
     } finally { setClearBusy(false); }
+  }
+
+  function adjust(teamId: (typeof state.teams)[number]["id"], delta: number) {
+    dispatch({ type: "adjust-score", teamId, delta, reason: "Game Master correction", at: timestamp() });
   }
 
   function setPhase(item: (typeof phases)[number]) {
@@ -56,6 +60,21 @@ export default function HostOverview() {
 
       <ScoreStrip state={state} />
 
+      <details className={`card ${styles.scoreFix}`}>
+        <summary><Undo2 size={15} aria-hidden /> Score corrections</summary>
+        <p>Fix a mistaken award. Every change is added to the score ledger.</p>
+        <div className={styles.scoreFixGrid}>
+          {state.teams.map((team) => (
+            <div key={team.id} style={{ "--team-color": team.color } as React.CSSProperties}>
+              <strong>{team.shortName}</strong>
+              <button className="button button-ghost" onClick={() => adjust(team.id, -100)} type="button" aria-label={`Subtract 100 from ${team.name}`}>−100</button>
+              <button className="button button-ghost" onClick={() => adjust(team.id, 100)} type="button" aria-label={`Add 100 to ${team.name}`}>+100</button>
+            </div>
+          ))}
+        </div>
+        <button className="button button-ghost" disabled={!state.scoreLedger.length} onClick={() => dispatch({ type: "undo-score" })} type="button"><Undo2 size={16} aria-hidden /> Undo last score change</button>
+      </details>
+
       <div className={styles.dashboardGrid}>
         <section className={`card ${styles.timeline}`}>
           <div className={styles.cardHeading}>
@@ -66,7 +85,7 @@ export default function HostOverview() {
             {phases.map((item) => {
               const active = state.phase === item.phase;
               return (
-                <button className={active ? styles.activePhase : undefined} onClick={() => setPhase(item)} type="button" key={item.phase}>
+                <button aria-current={active ? "step" : undefined} className={active ? styles.activePhase : undefined} disabled={active} onClick={() => setPhase(item)} type="button" key={item.phase}>
                   <time>{item.time}</time>
                   <span><strong>{item.label}</strong><small>{active ? "Live now on every screen" : "Tap to make live"}</small></span>
                   {active ? <CheckCircle2 aria-label="Current phase" /> : <ArrowRight aria-hidden />}
@@ -84,7 +103,7 @@ export default function HostOverview() {
           <div className={styles.roomList}>
             {state.breakoutRooms.map((room) => (
               <article key={room.id}>
-                <div><span>{gameName(room.game)}</span><strong>{room.name}</strong><small>{room.hostName}</small></div>
+                <div><span>{gameName(room.game)}</span><strong>{room.name}</strong><small className={room.hasActiveHostGrant ? styles.hostReady : styles.hostNeeded}>{room.hasActiveHostGrant ? "Host link active" : "Host link not sent"}</small></div>
                 <button type="button" title={`Copy ${room.code}`} onClick={() => navigator.clipboard?.writeText(room.code)}><b>{room.code}</b><Copy size={16} /></button>
               </article>
             ))}
